@@ -1,0 +1,437 @@
+---
+title: "Analyses de tendances"
+author: "Mathilde Vimont"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: html_document
+params:
+  dataSp: ""
+  sp: ""
+  interestVar: ""
+  fixedEffects: ""
+  randomEffects: ""
+  factorVariables: ""
+  distribution: ""
+  nTry: ""
+  zi: ""
+  scaling: ""
+  coordinates: ""
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+sp <- params$sp
+dataSp <- params$dataSp
+interestVar <- params$interestVar
+fixedEffects <- params$fixedEffects
+randomEffects <- params$randomEffects
+factorVariables <- params$factorVariables
+distribution <- params$distribution
+zi <- params$zi
+nTry <- params$nTry
+scaling <- params$scaling
+coordinates <- params$coordinates
+
+```
+
+# Contexte
+
+Vous avez lancé un script d'analyses de tendances temporelles. Nous essayons de répondre à 3 questions dans ce document : 
+
+- est-ce que l'espèce étudiée voit son abondance augmenter, diminuer, ou bien stagner ?
+
+- quelle est l'intensité de cette évolution ?
+
+- indépendamment de cette tendance, existe-t-il une variabilité de l'abondance entre les années d'enquête ?
+
+# I. Statistiques descriptives
+
+Nous nous intéressons plus précisément à l'espèce : **_`r sp`_**. 
+
+Nous disposons pour cette espèce de **`r nrow(dataSp)` observations**, entre **`r min(dataSp$year)`** et **`r max(dataSp$year)`** : 
+
+```{r histoTemp, echo = FALSE, warning = FALSE, message = FALSE}
+plotYear <- tempDistrPlot(dataSp, interestVar)
+ggsave(filename = paste0(sp, ".png"), plot = plotYear, 
+       path = paste0(resDir, "GLOBAL/YEAR"))
+
+plotYear
+```
+
+Ces observations ont été faites sur **`r length(unique(dataSp$site))` sites** distribués sur l'ensemble de la France `r if(!coordinates) {"<!--"}`de cette façon :
+
+```{r map, echo = FALSE, eval = coordinates, message = FALSE, warning = FALSE}
+plotMap <- makeMap(data = dataSp, type = "site", shape = "square")
+ggsave(filename = paste0(sp, ".png"), plot = plotMap, 
+       path = paste0(resDir, "GLOBAL/MAP"))
+
+plotMap
+```
+
+`r if(!coordinates) {"-->"}`
+
+# II. Tendance globale 
+
+L'objectif de cette section est de répondre aux deux premières questions qui pourraient se résumer par : comment évolue l'abondance de l'espèce dans le temps ? 
+
+## 1. Paramètres
+Les paramètres choisis pour faire la régression sont les suivants :
+
+- variable d'intérêt : **`r interestVar`** 
+
+- effets fixes : **`r fixedEffects`**, dont variables catégorielles : **`r ifelse(is.null(factorVariables), "NULL", factorVariables)`** 
+
+- effets aléatoires : **`r randomEffects`** 
+
+- distribution : **`r distribution`** 
+
+- modèle zéro-enflé : **`r zi`**
+
+Le modèle choisi pour faire la régression est donc le suivant : 
+
+```{r formule, echo=FALSE}
+writeFormula(interestVar, fixedEffects, randomEffects)
+
+```
+
+## 2. Résultats
+
+```{r annualModel, echo=FALSE}
+# Calculer la tendance annuelle pour cette espèce  
+annualModel <- makeGLM(data = dataSp, 
+                       interestVar = interestVar,
+                       fixedEffects = fixedEffects,
+                       randomEffects = randomEffects,
+                       factorVariables = factorVariables, 
+                       distribution = distribution,
+                       zi = zi,
+                       nTry = nTry,
+                       scaling = scaling)
+
+# Extraire un éventuel problème de convergence
+convIssue <- identifyConvIssue(annualModel)
+```
+
+`r if(convIssue) {"<!--"}`
+
+Les résultats de la régression sont présentés dans le tableau suivant. 
+
+*NB : les coefficients ont été retransformés et renormalisés.*
+```{r summary, echo=FALSE, eval = !convIssue}
+# Reformater les sorties du modèle
+annualSum <- summaryOutput(model = annualModel$value, 
+                           distribution = distribution,
+                           factorVariables = factorVariables,
+                           transform = T, 
+                           rescale = scaling, 
+                           data = dataSp,
+                           fixedEffects = fixedEffects)
+
+# Extraire la significativité de l'année
+signVar <- ifelse(annualSum["year",]$Significant == "Yes", 
+                  "significative", 
+                  "non significative. NB : l'interprétation des coefficients décrite ci-après n'est donc pas fiable.")
+
+annualSum %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+```
+
+La variable *year* est : **`r ifelse(exists("signVar"), signVar, NA)`**
+
+```{r coefficients, echo=FALSE, eval = !convIssue}
+# Extraire les tendances calculées
+varRange <- max(dataSp$year) - min(dataSp$year) + 1
+
+# Calculer les coefficients dé-normalisés mais non transformés
+coefs <- analyseCoef(model = annualModel$value,
+                     rescale = scaling,
+                     data = dataSp,
+                     distribution = distribution, 
+                     effectVar = "year",
+                     varRange = varRange)
+
+```
+
+L'interprétation du coefficient associé à la variable *year* peut s'exprimer comme suit :
+
+- depuis **`r min(dataSp$year)`**, l'abondance a été multipliée par : **`r ifelse(exists("coefs"), coefs$trend, NA)`**
+
+```{r perc, echo=FALSE, eval = !convIssue}
+percEvol <- paste(coefs$perc, "%", "(", coefs$percInf, "/", coefs$percSup, "%", ")")
+```
+
+- cela correspond à une variation de : **`r ifelse(exists("percEvol"), percEvol, NA)`**
+
+
+# III. Variations inter-annuelles
+
+L'objectif de cette section est de répondre à la troisième question, et donc de capter les variabilités d'abondance qui existent au sein de chaque année. Pour cela, la variable *année* est considérée comme une variable catégorielle, dont chaque niveau correspond à une année : cela doit permettre de comparer les variations d'une année sur l'autre.
+
+## 1. Régression 
+
+`r if (convIssue){"-->"}`
+
+```{r interAnnualModel, echo=FALSE}
+# Calculer les variations interannuelles pour cette espèce  
+interAnnualModel <- makeGLM(data = dataSp, 
+                            interestVar = interestVar,
+                            fixedEffects = fixedEffects,
+                            randomEffects = randomEffects,
+                            factorVariables = c(factorVariables, "year"), 
+                            distribution = distribution,
+                            zi = zi,
+                            nTry = nTry,
+                            scaling = scaling,
+                            intercept = TRUE)
+
+# Extraire un éventuel problème de convergence
+convIssue2 <- convIssue | identifyConvIssue(interAnnualModel)
+```
+
+`r if (convIssue2){"<!--"}`
+Les résultats de cette régression sont regroupés dans le tableau suivant, dans lequel vous retrouvez donc les taux de croissance relatifs pour chaque année :
+
+```{r interAnnualSum, echo=FALSE, eval = !convIssue2}
+# Reformater les résultats de variations inter-annuelles  
+interAnnualSum <- summaryOutput(model = interAnnualModel$value,
+                                distribution = distribution, 
+                                factorVariables = c("year",factorVariables),
+                                transform = TRUE,
+                                rescale = scaling,
+                                data = dataSp, 
+                                fixedEffects = fixedEffects)
+
+interAnnualSum %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+
+```
+
+## 2. Visualisation 
+
+```{r echo=FALSE, eval = !convIssue2}
+if(distribution %in% c("nbinom2", "poisson")){
+  ref <- "un taux d'accroissement de 1"
+}else if(distribution %in% c("binomial", "betabinomial")){
+  ref <- "une probabilité de présence de 0.5"
+}
+```
+
+Pour mieux visualiser ces différences entre années, nous proposons la représentation graphique qui suit : l'année de reférence (ici, la première année **`r min(dataSp$year)`**) est associée à `r ifelse(exists("ref"), ref, NA)`, toutes les autres années sont représentées par un coefficient moyen et un intervalle de confiance à 95%. Le graphique permet également de déterminer quels coefficients sont significativement différents de la référence.
+
+```{r plotGLM, echo=FALSE, eval = !convIssue2, warning = FALSE, message = FALSE}
+# Créer un graphique de la variation interannuelle de l'abondance
+plotTrend <- plotGLM(summary = interAnnualSum, effectVar = "year", 
+                     distribution = distribution, type = "relative")
+
+ggsave(filename = paste0(sp, ".png"), plot = plotTrend, 
+       path = paste0(resDir, "GLOBAL/TREND"))
+
+plotTrend
+```
+
+`r if (convIssue2){"-->Le modèle n'a pas convergé, les résultats et la visualisation des variations inter-annuelles ne sont pas disponibles."}`
+
+`r if (convIssue){"<!--"}`
+# III. Qualité du modèle
+
+On s'intéresse ici à la qualité du modèle de calcul de tendances lancé dans le **I**.
+
+## 1. Multicolinéarité
+
+La multicolinéarité est un phénomène qui traduit le fait qu'une des variables explicatives est **linéairement liée aux autres variables**. Cela rend les paramètres estimés pour ces variables instables, et peut même cacher un effet significatif de ces variables.  
+
+La mesure de cette multicolinéarité peut passer par le **VIF (Variance Inflation Factor)**, dont les valeurs pour les variables explicatives sont regroupées dans le tableau suivant :
+
+```{r echo=FALSE, eval = !convIssue}
+# Calculer le vif pour le modèle annuel
+vif <- catchConditions(measureVIF(model = annualModel$value))
+
+# Dans le cas où le calcul du vif a fonctionné
+if (is.null(vif$error)){
+  
+  if(class(vif$value) == "character"){
+    print(vif$value)
+  }else{
+    vif$value %>%
+      kbl() %>%
+      kable_paper("hover", full_width = F)
+  }
+  
+} else{
+  print("Les VIFs n'ont pas pu être calculés. L'erreur est la suivante :")
+  print(vif$error)
+}
+
+```
+
+*NB : nous laissons le choix à l'utilisateur de gérer un vif anormalement élevé comme il le souhaite. Une partie du README est axé sur les seuils à choisir et les traitements à faire le cas échéant.*
+
+## 2. Dispersion des résidus et zéro-inflation
+
+Dans le cas d'une régression binomiale ou de Poisson, une hypothèse forte est faite sur la **dispersion des résidus**, ce qui peut entraîner des estimations biaisées des coefficients et p-values en cas de non respect de cette hypothèse (voir README pour plus de détails). 
+
+```{r echo=FALSE, eval = !convIssue}
+# Calculer la dispersion
+if(distribution %in% c("nbinom2", "poisson")){
+  refDistrib <- "de poisson"
+}
+
+```
+
+Regardez ici la distribution de vos données par rapport à une loi `r ifelse(exists("refDistrib"), refDistrib, NA)` de même(s) paramètre(s), pour identifer de manière empirique les problèmes potentiels de sur-dispersion et de zero-inflation : 
+
+```{r echo=FALSE, eval = !convIssue}
+# Calculer la dispersion
+plotDispersion(dataSp, interestVar, distribution, nTry)
+```
+
+`r ifelse(zi, "", "Le résultat suivant permet de savoir s'il y a sous/sur-dispersion significative :")`
+
+```{r echo = FALSE, eval = !(convIssue|zi)}
+if(!zi){
+  # Calculer la dispersion
+disp <- testDispersion(annualModel$value)
+
+disp %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+}else{
+  print("Dispersion cannot be calculated for zero-inflation model !")
+}
+
+```
+
+
+`r ifelse(zi, "", "Si le ratio est très supérieur à **1** et que la p-value associée est inférieure à 0.05, alors on peut dire qu'on se trouve dans un cas de sur-dispersion. Une des solutions possibles pour remédier à ce problème est : <br /> - dans le cas de données de comptage, de choisir une distribution **Négative Binomiale** ; <br /> - dans le cas de données de présence / absence, de choisir une distribution **Béta-Binomiale**.")`
+
+`r if(convIssue) {"-->"}`
+
+`r if(!convIssue) {"<!--"}`
+**Attention**, le calcul de tendance a rencontré un problème de convergence ou une erreur pendant le déroulé de la procédure, ce qui empêche de fournir les résultats. La partie suivante doit permettre de proposer des explications plausibles et des solutions éventuelles pour résoudre ces problèmes.
+
+```{r include = TRUE, echo = FALSE, eval = convIssue}
+error <- annualModel$error 
+convWarning <- annualModel$warnings[grep("convergence", annualModel$warnings)]
+issueType <- ifelse(is.null(error), 
+                    "un problème de convergence détaillé",
+                    "une erreur détaillée")
+```
+
+En l'occurrence, le calcul de tendances sur l'espèce _`r sp`_ a entraîné `r ifelse(exists("issueType"), issueType, NA)` ci-après :
+
+```{r include = TRUE, echo = FALSE, eval = convIssue}
+if (!is.null(error)){
+  print(error)
+} else{
+  print(convWarning)
+}
+
+```
+
+# III. Problème de convergence
+
+Les erreurs et problèmes de convergence peuvent-être dûs à un ensemble de facteur, que nous essayons de décrire au mieux dans la suite :
+
+## 1. Sur-paramétrisation 
+
+Une **sur-paramétrisation** du modèle peut se produire dans le cas où la quantité de données ne permet pas de faire une estimation fiable des paramètres. 
+
+Pour information, regardez le nombre d'observations relativement au nombre de variables pour cette espèce :
+
+```{r include = TRUE, echo = FALSE, eval = convIssue}
+nbVar <- length(c(fixedEffects, randomEffects))
+nbObs <- nrow(dataSp)
+
+paramData <- data.frame(`obs` = nbObs,`var` = nbVar)
+colnames(paramData) <- c("Nombre d'observations", "Nombre de variables")
+
+# kable(data.frame(`obs` = nbObs,`var` = nbVar),
+#       col.names = c("Nombre d'observations", "Nombre de variables"))
+paramData %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+```
+
+## 2. Désequilibre d'échelle
+
+Un **déséquilibre d'échelles** entre variables numériques (ex : année (2000 - 2020) vs. température (0-40°C)) peut rendre difficiles et coûteux les calculs réalisés lors du processsus d'estimation. 
+
+Pour information, regardez les gammes de valeurs des variables numériques incluses dans le modèle :
+
+```{r include = TRUE, echo = FALSE, eval = convIssue}
+# Identify numeric variables
+numVariables <- fixedEffects
+
+if (!is.null(factorVariables)){
+  numVariables <- fixedEffects[-match(factorVariables, fixedEffects)]
+}
+
+# Extract min and maximal values of each
+minData <- apply(as.matrix(dataSp[,numVariables]), 2, function(x) round(min(x),2))
+maxData <- apply(as.matrix(dataSp[,numVariables]), 2, function(x) round(max(x),2))
+
+# Put them in data.frame
+rangeData <- data.frame(rbind(minData, maxData))
+
+# Change the rownames
+rownames(rangeData) <- c("Valeur minimale", "Valeur maximale")
+colnames(rangeData) <- numVariables
+
+#kable(rangeData, row.names = T, col.names = numVariables)
+rangeData %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+```
+
+Pour résoudre ce problème, vous pouvez essayer de centrer-réduire les variables en choisissant *scaling <- TRUE* dans les paramètres.
+
+## 3. Variance nulle d'un effet aléatoire
+
+La **variance d'un effet aléatoire** peut parfois être estimée comme nulle ou quasi-nulle, ce qui peut notamment arriver lorsque la variable présente trop peu de catégories différentes.
+
+En l'occurrence, regardez le nombre de catégories présentes pour les variables à prendre en compte comme effet aléatoire :
+
+```{r include = TRUE, echo = FALSE, eval = convIssue}
+
+eff <- c(randomEffects, unlist(sapply(nestedEffects, FUN = function(x) x[2])))
+
+nbLevels <- apply(X = as.matrix(dataSp[eff]), 
+                  MARGIN = 2, 
+                  FUN = function(x) length(unique(x)))
+
+dataLevels <- data.frame(nbLevels)
+
+rownames(dataLevels) <- "Nombre de catégories"
+colnames(dataLevels) <- eff
+
+#kable(nbLevels, col.names = randomEffects)
+
+dataLevels %>%
+  kbl() %>%
+  kable_paper("hover", full_width = F)
+```
+
+`r if(!convIssue) {"-->"}`
+
+
+```{r include = TRUE, echo = FALSE}
+# Save all information in an R list
+if(!convIssue & !convIssue2){
+  listAll[[sp]] <- list(sp = sp, nbObs = nrow(dataSp), varRange = varRange, totCount = sum(dataSp[,interestVar]),
+                        annualModel = annualModel$value, annualSum = annualSum,
+                        coefs = coefs, interAnnualModel = interAnnualModel$value, 
+                        interAnnualSum = interAnnualSum, plotTrend = plotTrend)  
+} else if(convIssue){
+  listAll[[sp]] <- list(sp = sp, nbObs = nrow(dataSp), varRange = NULL, totCount = sum(dataSp[,interestVar]),
+                        annualModel = NULL, annualSum = NULL, coefs = NULL, interAnnualModel = NULL, 
+                        interAnnualSum = NULL, plotTrend = NULL)
+} else if(convIssue2){
+  listAll[[sp]] <- list(sp = sp, nbObs = nrow(dataSp), varRange = varRange, totCount = sum(dataSp[,interestVar]),
+                        annualModel = annualModel$value, annualSum = annualSum,
+                        coefs = coefs, interAnnualModel = NULL, 
+                        interAnnualSum = NULL, plotTrend = NULL)  
+}
+
+```
