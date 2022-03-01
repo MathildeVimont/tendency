@@ -22,7 +22,7 @@ La suite de ce README a pour objectif de documenter les différentes fonctions m
 Un certain nombre de packages sont nécessaires au bon fonctionnement des calculs de tendance. Ils sont regroupés dans le fichier *librairies.R*, dont le chemin est le suivant **scripts/basic** à partir de la racine `rootDir`.
 NB : à vous de changer le chemin du dossier racine pour pointer vers le dossier contenant le *main.R*.
 ```{r library, echo=TRUE, warning=FALSE, message = FALSE}
-rootDir <- "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/V1/"
+rootDir <- "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/partage/V1/"
 
 scrDir <- paste0(rootDir, "scripts/")
 dataDir <- paste0(rootDir, "data/STERF/")
