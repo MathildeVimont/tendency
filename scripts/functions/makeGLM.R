@@ -7,6 +7,7 @@
 #' @param fixedEffects a `vector` of variables that should be treated as fixed effects
 #' @param randomEffects a `vector` of variables that should be treated as random effects
 #' @param factorVariables a `vector` of variables that should be treated as factors
+#' @param contrasts a `vector` containing the contrasts that should be applied to the categorical variables
 #' @param distribution a `string` containing the chosen distribution between "gaussian", "poisson", "binomial", "betabinomial", "nbinom2" (by default : "gaussian")
 #' @param zi a `boolean` that is `TRUE` if zero-inflation should be taken into account
 #' @param nTry an `integer` corresponding to the number of potential presences. Only needed in case of binomial distribution.
@@ -21,8 +22,9 @@
 #' - error a `string` containing a potential error encountered during the regression
 #' @example
 makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
-                    randomEffects = NULL, factorVariables = NULL,
-                    distribution = "gaussian", zi = FALSE,  
+                    randomEffects = NULL, nestedEffects = NULL,
+                    factorVariables = NULL, contr = NULL,
+                    distribution = "gaussian", zi = FALSE, 
                     nTry = NULL, scaling = FALSE, intercept = TRUE){
   
   ####################
@@ -52,20 +54,10 @@ makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
   ###############
   
   # Check that factor variables correspond to factor columns
-  
-  if (!is.null(factorVariables)){
-    
-    for (var in factorVariables){
-      
-      if (!is.factor(data[,var])){
-        data[,var] <- as.factor(data[,var])
-      }
-      
-    }
-  }
+  # And choose the right contrasts for each categorical variable
+  data <- setContrasts(data, factorVariables, contr)
   
   # Scale variables of interest if requested
-  
   if(scaling){
     data <- scaleData(data, fixedEffects, factorVariables)
   }
@@ -78,6 +70,7 @@ makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
   formula <- writeFormula(interestVar = interestVar,
                           fixedEffects = fixedEffects,
                           randomEffects = randomEffects,
+                          nestedEffects = nestedEffects,
                           intercept = intercept)
   
   # To take zero-inflation into account

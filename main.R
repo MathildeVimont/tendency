@@ -5,7 +5,7 @@ rm(list = ls())
 ######################################
 
 # Chemin d'accès au package
-dir = "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/partage/V1/"
+dir = "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/git/tendency/"
 
 # Quelle est la variable d'abondance à étudier ?
 interestVar <- "abondance"
@@ -46,7 +46,7 @@ source(paste0(scrDir, "basic/libraries.R"))
 
 # Importation des fonctions
 sapply(X = list.files(paste0(scrDir,"functions/"), pattern = "*.R"), 
-       FUN = function(x) source(paste0(scrDir,"functions/", x), .GlobalEnv))
+       FUN = function(x) source(paste0(scrDir,"functions/", x), encoding = "UTF-8", .GlobalEnv))
 
 # Importation des paramètres généraux
 source(paste0(scrDir, "basic/parameters.R"))
@@ -90,7 +90,7 @@ if(check){
   
   listAll <- list()
   for (sp in speciesList){
-    
+    sp = "ACRARU"
     cat("Species ", sp, " is going under analysis\n")
     
     # Création du répertoire dédié à l'espèce sp
@@ -104,6 +104,7 @@ if(check){
     
     # Results
     rmarkdown::render(
+      encoding = "UTF-8",
       input  = paste0(scrDir, 'rmd/routine.Rmd'),
       output_dir = paste0(resDir, "SPECIES/", sp),
       output_file = "Analysis",
@@ -119,8 +120,6 @@ if(check){
                     scaling = scaling,
                     coordinates = coord))
     
-    saveAllTrends(listAll, path = paste0(resDir, "GLOBAL/"))
-    
   }
-  
+  reportConvergence(path = paste0(resDir, "GLOBAL/"))
 }

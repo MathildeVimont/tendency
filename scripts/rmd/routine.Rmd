@@ -141,7 +141,7 @@ La variable *year* est : **`r ifelse(exists("signVar"), signVar, NA)`**
 
 ```{r coefficients, echo=FALSE, eval = !convIssue}
 # Extraire les tendances calculées
-varRange <- max(dataSp$year) - min(dataSp$year) + 1
+varRange <- max(dataSp$year) - min(dataSp$year) - 1
 
 # Calculer les coefficients dé-normalisés mais non transformés
 coefs <- analyseCoef(model = annualModel$value,
@@ -178,9 +178,10 @@ interAnnualModel <- makeGLM(data = dataSp,
                             interestVar = interestVar,
                             fixedEffects = fixedEffects,
                             randomEffects = randomEffects,
-                            factorVariables = c(factorVariables, "year"), 
+                            factorVariables = c("year", factorVariables), 
                             distribution = distribution,
                             zi = zi,
+                            contr = c("mean", rep(NULL, length(factorVariables))),
                             nTry = nTry,
                             scaling = scaling,
                             intercept = TRUE)
@@ -200,7 +201,8 @@ interAnnualSum <- summaryOutput(model = interAnnualModel$value,
                                 transform = TRUE,
                                 rescale = scaling,
                                 data = dataSp, 
-                                fixedEffects = fixedEffects)
+                                fixedEffects = fixedEffects,
+                                contr = c("mean", rep(NULL, length(factorVariables))))
 
 interAnnualSum %>%
   kbl() %>%
@@ -222,11 +224,12 @@ Pour mieux visualiser ces différences entre années, nous proposons la représe
 
 ```{r plotGLM, echo=FALSE, eval = !convIssue2, warning = FALSE, message = FALSE}
 # Créer un graphique de la variation interannuelle de l'abondance
-plotTrend <- plotGLM(summary = interAnnualSum, effectVar = "year", 
-                     distribution = distribution, type = "relative")
+plotTrend <- plotGLM(summaryCat = interAnnualSum,  effectVar = "year",
+                     summary = annualSum, distribution = distribution, 
+                     sp = sp, type = "relative", coefs = coefs)
 
 ggsave(filename = paste0(sp, ".png"), plot = plotTrend, 
-       path = paste0(resDir, "GLOBAL/TREND"))
+       path = paste0(resDir, "GLOBAL/TREND"), device = "png")
 
 plotTrend
 ```
@@ -417,21 +420,22 @@ dataLevels %>%
 
 
 ```{r include = TRUE, echo = FALSE}
-# Save all information in an R list
-if(!convIssue & !convIssue2){
-  listAll[[sp]] <- list(sp = sp, nbObs = nrow(dataSp), varRange = varRange, totCount = sum(dataSp[,interestVar]),
-                        annualModel = annualModel$value, annualSum = annualSum,
-                        coefs = coefs, interAnnualModel = interAnnualModel$value, 
-                        interAnnualSum = interAnnualSum, plotTrend = plotTrend)  
-} else if(convIssue){
-  listAll[[sp]] <- list(sp = sp, nbObs = nrow(dataSp), varRange = NULL, totCount = sum(dataSp[,interestVar]),
-                        annualModel = NULL, annualSum = NULL, coefs = NULL, interAnnualModel = NULL, 
-                        interAnnualSum = NULL, plotTrend = NULL)
-} else if(convIssue2){
-  listAll[[sp]] <- list(sp = sp, nbObs = nrow(dataSp), varRange = varRange, totCount = sum(dataSp[,interestVar]),
-                        annualModel = annualModel$value, annualSum = annualSum,
-                        coefs = coefs, interAnnualModel = NULL, 
-                        interAnnualSum = NULL, plotTrend = NULL)  
+# Save global trends
+if(convIssue){
+  annualSum = NULL
+  interAnnualModel = NULL
+  interAnnualSum = NULL
 }
+
+saveGlobalTrends(sp = sp, data = dataSp, interestVar = interestVar, annualMod = annualModel,
+                 annualSum = annualSum, coefs = coefs, path = paste0(resDir, "GLOBAL/"))
+
+# Save yearly variations
+if(convIssue2){
+  interAnnualSum = NULL
+}
+
+saveYearlyVariations(sp = sp, data = dataSp, interestVar = interestVar, interAnnualMod = interAnnualModel,
+                     interAnnualSum = interAnnualSum, contr = "mean", path = paste0(resDir, "GLOBAL/"))
 
 ```

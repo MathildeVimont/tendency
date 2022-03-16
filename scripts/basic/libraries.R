@@ -8,7 +8,12 @@ listPackages <- c("lubridate", "tidyverse", "data.table", "stringr",
                   "flexdashboard", "maps")
 
 # Installation des packages non installés
-install.packages(setdiff(listPackages, rownames(installed.packages())))  
+packagesToInstall <- setdiff(listPackages, rownames(installed.packages()))
+
+if(length(packagesToInstall) > 0){
+  install.packages(packagesToInstall)  
+}
+
 
 ##############################
 # Importation des librairies #
