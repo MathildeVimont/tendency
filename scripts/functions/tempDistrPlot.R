@@ -6,7 +6,9 @@
 #' 
 #' @return a histogram of number of abundance observations against year
 #'
-tempDistrPlot <- function(data, interestVar){
+tempDistrPlot <- function(data, interestVar, sp, path = NULL){
+  
+  cat("- Temporal barplot\n")
   
   #####################################
   # EXTRACT PRESENCE / ABSENCE COUNTS #
@@ -17,7 +19,7 @@ tempDistrPlot <- function(data, interestVar){
   
   # Add a column that testifies if the species was present or not
   data$presence <- 'Absence'
-  data[data[,interestVar] != 0,]$presence <- 'Presence'
+  data[data[,interestVar] != 0,]$presence <- 'Présence'
   
   # Count number of presence / absence observations for each year
   options(dplyr.summarise.inform = FALSE)
@@ -31,12 +33,20 @@ tempDistrPlot <- function(data, interestVar){
   # Create plot
   plot <- ggplot(dataYear, aes(x = year, y = tot, fill = presence)) +
     geom_bar(stat = "identity") +
-    ylab("Number of studied points") +
-    xlab("Year") +
+    ylab("Nombre de sites visités") +
+    xlab("Année") +
     scale_fill_manual(values = c("#d7dbdd", "#16a085")) +
     theme_bw() +
     theme(legend.title = element_blank())
   
+  # Save plot if required
+  if(!is.null(path)){
+    ggsave(filename = paste0(sp, ".png"), plot = plot, path = path)
+    
+  }
+  
+  cat(" --> DONE\n")
+  
   return(plot)
   
-} 
+}

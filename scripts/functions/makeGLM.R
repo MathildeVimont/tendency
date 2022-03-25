@@ -6,6 +6,7 @@
 #' @param interestVar a `string` corresponding to the response variable
 #' @param fixedEffects a `vector` of variables that should be treated as fixed effects
 #' @param randomEffects a `vector` of variables that should be treated as random effects
+#' @param nestedEffects a `list` of 2-elements vector, containing nested effects 
 #' @param factorVariables a `vector` of variables that should be treated as factors
 #' @param contrasts a `vector` containing the contrasts that should be applied to the categorical variables
 #' @param distribution a `string` containing the chosen distribution between "gaussian", "poisson", "binomial", "betabinomial", "nbinom2" (by default : "gaussian")
@@ -23,7 +24,7 @@
 #' @example
 makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
                     randomEffects = NULL, nestedEffects = NULL,
-                    factorVariables = NULL, contr = NULL,
+                    factorVariables = NULL, contr = NA,
                     distribution = "gaussian", zi = FALSE, 
                     nTry = NULL, scaling = FALSE, intercept = TRUE){
   
@@ -88,61 +89,56 @@ makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
     model <- catchConditions(glmmTMB(formula, data = data, 
                                      family = distribution, 
                                      ziformula = ziFormula,
-                                     control = glmmTMBControl(profile = quote(nrow(data) > 10000 & length(parameters$beta)>=5))))
+                                     control = glmmTMBControl(profile = T)))
     
-    # If 1st convergence issue, try changing the optimizer
-    convIssue <- identifyConvIssue(model)
-   
-    if(convIssue){
-      model <- catchConditions(glmmTMB(formula, data = data, 
-                                       family = distribution, 
-                                       ziformula = ziFormula,
-                                       control = glmmTMBControl(profile = quote(nrow(data) > 10000 & length(parameters$beta)>=5),
-                                                                optimizer = optim, optArgs =  list(method="BFGS"))))
-      
-    }
-    
-    # If 2nd convergence issue, try increasing iterations
+    # If 1st convergence issue, erase the profile = T argument
     convIssue <- identifyConvIssue(model)
     
     if(convIssue){
       model <- catchConditions(glmmTMB(formula, data = data, 
                                        family = distribution, 
-                                       ziformula = ziFormula,
-                                       control = glmmTMBControl(profile = quote(nrow(data) > 10000 & length(parameters$beta)>=5),
-                                                                optCtrl = list(iter.max = 1000, eval.max = 1000))))
+                                       ziformula = ziFormula))
       
     }
+    
+    # # If 2nd convergence issue, try changing the optimizer
+    # convIssue <- identifyConvIssue(model)
+    # 
+    # if(convIssue){
+    #   model <- catchConditions(glmmTMB(formula, data = data, 
+    #                                    family = distribution, 
+    #                                    ziformula = ziFormula,
+    #                                    control = glmmTMBControl(optimizer = optim, 
+    #                                                             optArgs = list(method = "BFGS"))))
+    #   
+    # }
     
   }else{
     model <- catchConditions(glmmTMB(formula, data = data, 
                                      family = distribution, 
                                      weights = rep(nTry, nrow(data)),
-                                     control = glmmTMBControl(profile = quote(nrow(data) > 10000) & length(parameters$beta)>=5)))
+                                     control = glmmTMBControl(profile = T)))
     
-    # If 1st convergence issue, try changing the optimizer
+    # If 1st convergence issue, try erasing the profile = T argument
     convIssue <- identifyConvIssue(model)
     
     if(convIssue){
       model <- catchConditions(glmmTMB(formula, data = data, 
                                        family = distribution, 
-                                       weights = rep(nTry, nrow(data)),
-                                       control = glmmTMBControl(profile = quote(nrow(data) > 10000 & length(parameters$beta)>=5),
-                                                                optimizer = optim, optArgs =  list(method="BFGS"))))
+                                       weights = rep(nTry, nrow(data))))
       
     }
     
-    # If 2nd convergence issue, try increasing iterations
-    convIssue <- identifyConvIssue(model)
-    
-    if(convIssue){
-      model <- catchConditions(glmmTMB(formula, data = data, 
-                                       family = distribution, 
-                                       weights = rep(nTry, nrow(data)),
-                                       control = glmmTMBControl(profile = quote(nrow(data) > 10000 & length(parameters$beta)>=5),
-                                                                optCtrl = list(iter.max = 1000, eval.max = 1000))))
-      
-    }
+    # # If 2nd convergence issue, try changing the optimizer
+    # convIssue <- identifyConvIssue(model)
+    # 
+    # if(convIssue){
+    #   model <- catchConditions(glmmTMB(formula, data = data, 
+    #                                    family = distribution, 
+    #                                    weights = rep(nTry, nrow(data)),
+    #                                    control = glmmTMBControl(optimizer = optim, optArgs =  list(method="BFGS"))))
+    #   
+    # }
   }
   
   

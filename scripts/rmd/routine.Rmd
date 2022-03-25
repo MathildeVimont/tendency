@@ -15,6 +15,8 @@ params:
   zi: ""
   scaling: ""
   coordinates: ""
+  effectVar: ""
+  contrEffect: ""
 ---
 
 ```{r setup, include=FALSE}
@@ -31,7 +33,8 @@ zi <- params$zi
 nTry <- params$nTry
 scaling <- params$scaling
 coordinates <- params$coordinates
-
+effectVar <- params$effectVar
+contrEffect <- params$contrEffect
 ```
 
 # Contexte
@@ -141,14 +144,14 @@ La variable *year* est : **`r ifelse(exists("signVar"), signVar, NA)`**
 
 ```{r coefficients, echo=FALSE, eval = !convIssue}
 # Extraire les tendances calculées
-varRange <- max(dataSp$year) - min(dataSp$year) - 1
+varRange <- max(dataSp$year) - min(dataSp$year)
 
 # Calculer les coefficients dé-normalisés mais non transformés
 coefs <- analyseCoef(model = annualModel$value,
                      rescale = scaling,
                      data = dataSp,
                      distribution = distribution, 
-                     effectVar = "year",
+                     effectVar = effectVar,
                      varRange = varRange)
 
 ```
@@ -178,10 +181,10 @@ interAnnualModel <- makeGLM(data = dataSp,
                             interestVar = interestVar,
                             fixedEffects = fixedEffects,
                             randomEffects = randomEffects,
-                            factorVariables = c("year", factorVariables), 
+                            factorVariables = c(effectVar, factorVariables), 
                             distribution = distribution,
                             zi = zi,
-                            contr = c("mean", rep(NULL, length(factorVariables))),
+                            contr = c(contrEffect, rep(NA, length(factorVariables))),
                             nTry = nTry,
                             scaling = scaling,
                             intercept = TRUE)
@@ -197,12 +200,12 @@ Les résultats de cette régression sont regroupés dans le tableau suivant, dan
 # Reformater les résultats de variations inter-annuelles  
 interAnnualSum <- summaryOutput(model = interAnnualModel$value,
                                 distribution = distribution, 
-                                factorVariables = c("year",factorVariables),
+                                factorVariables = c(effectVar, factorVariables),
                                 transform = TRUE,
                                 rescale = scaling,
                                 data = dataSp, 
                                 fixedEffects = fixedEffects,
-                                contr = c("mean", rep(NULL, length(factorVariables))))
+                                contr = c(contrEffect, rep(NA, length(factorVariables))))
 
 interAnnualSum %>%
   kbl() %>%
@@ -224,9 +227,9 @@ Pour mieux visualiser ces différences entre années, nous proposons la représe
 
 ```{r plotGLM, echo=FALSE, eval = !convIssue2, warning = FALSE, message = FALSE}
 # Créer un graphique de la variation interannuelle de l'abondance
-plotTrend <- plotGLM(summaryCat = interAnnualSum,  effectVar = "year",
-                     summary = annualSum, distribution = distribution, 
-                     sp = sp, type = "relative", coefs = coefs)
+plotTrend <- plotGLM(summaryCat = interAnnualSum,  modCat = interAnnualModel,
+                     effectVar = effectVar, summary = annualSum, distribution = distribution, 
+                     sp = sp, type = "relative", coefs = coefs, contr = contrEffect)
 
 ggsave(filename = paste0(sp, ".png"), plot = plotTrend, 
        path = paste0(resDir, "GLOBAL/TREND"), device = "png")
@@ -404,7 +407,7 @@ nbLevels <- apply(X = as.matrix(dataSp[eff]),
                   MARGIN = 2, 
                   FUN = function(x) length(unique(x)))
 
-dataLevels <- data.frame(nbLevels)
+dataLevels <- t(data.frame(nbLevels))
 
 rownames(dataLevels) <- "Nombre de catégories"
 colnames(dataLevels) <- eff
@@ -414,6 +417,7 @@ colnames(dataLevels) <- eff
 dataLevels %>%
   kbl() %>%
   kable_paper("hover", full_width = F)
+
 ```
 
 `r if(!convIssue) {"-->"}`
@@ -436,6 +440,6 @@ if(convIssue2){
 }
 
 saveYearlyVariations(sp = sp, data = dataSp, interestVar = interestVar, interAnnualMod = interAnnualModel,
-                     interAnnualSum = interAnnualSum, contr = "mean", path = paste0(resDir, "GLOBAL/"))
+                     interAnnualSum = interAnnualSum, contr = contrEffect, path = paste0(resDir, "GLOBAL/"))
 
 ```

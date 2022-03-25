@@ -11,16 +11,23 @@ dir = "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/git/tendency/"
 interestVar <- "abondance"
 
 # Quels sont les effets fixes à considérer ?
-fixedEffects <- c("year")
+fixedEffects <- c("year") 
 
 # Quels sont les effets aléatoires à considérer ?
-randomEffects <- "site"
+randomEffects <- c("site")
 
 # Quels sont les effets emboîtés à considérer ?
-nestedEffects <- NULL # list(c("transect","site"))
+nestedEffects <- list() # list(c("transect","site"))
 
 # Quelles sont les variables de contrôle (i.e, autres que l'année) catégorielles ?
-factorVariables <- NULL
+factorVariables <- NULL 
+
+# Quelle est la variable indépendante dont vous souhaitez étudier l'effet ?
+effectVar <- "year" 
+
+# Quelle est le niveau de référence qui doit être considéré pour cette variable ?
+contrEffect <- "mean" # ou 2001 ou 2010 ou NULL
+
 
 ###########
 # CONTEXT #
@@ -89,8 +96,8 @@ if(check){
   #################
   
   listAll <- list()
-  for (sp in speciesList){
-    sp = "ACRARU"
+  for (sp in speciesList[5:length(speciesList)]){
+
     cat("Species ", sp, " is going under analysis\n")
     
     # Création du répertoire dédié à l'espèce sp
@@ -102,24 +109,9 @@ if(check){
     # Extraire les données issues de l'espèce sp
     dataSp <- data[indSp,]
     
-    # Results
-    rmarkdown::render(
-      encoding = "UTF-8",
-      input  = paste0(scrDir, 'rmd/routine.Rmd'),
-      output_dir = paste0(resDir, "SPECIES/", sp),
-      output_file = "Analysis",
-      params = list(sp = sp,
-                    dataSp = dataSp,
-                    interestVar = interestVar,
-                    fixedEffects = fixedEffects,
-                    randomEffects = randomEffects,
-                    factorVariables = factorVariables,
-                    distribution = automaticDistrib$distribution,
-                    zi = automaticDistrib$zi,
-                    nTry = nTry,
-                    scaling = scaling,
-                    coordinates = coord))
+    # Lancer la routine d'analyses
+    source(paste0(scrDir, "rmd/routine.R"))
     
   }
-  reportConvergence(path = paste0(resDir, "GLOBAL/"))
+  reportConvergence(data = data, path = paste0(resDir, "GLOBAL/"))
 }

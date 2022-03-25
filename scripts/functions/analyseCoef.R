@@ -26,45 +26,51 @@ analyseCoef <- function(model,
                         effectVar = "year", 
                         varRange = 1){
   
-  # Extract estimates from the model
-  coef <- summary(model)$coefficients$cond
-  
-  # Turn to dataframe
-  dataCoef <- data.frame(coef)
-  
-  # Extract coefficient from the chosen explanatory variable
-  interestCoefs <- c(dataCoef[effectVar,]$Estimate,
-                     dataCoef[effectVar,]$Estimate - 1.96 * dataCoef[effectVar,]$Std..Error,
-                     dataCoef[effectVar,]$Estimate + 1.96 * dataCoef[effectVar,]$Std..Error)
-  
-  # Rescale parameter if needed
-  if (rescale){
-    interestCoefs <- sapply(interestCoefs, function(x) x / sd(data[,effectVar]))
+  # Deal with convergence issue
+  if(identifyConvIssue(model)){
+    warning("The model has encountered a convergence issue. \nThe temporal trend coefficients cannot be calculated.")
+    
+    return(NULL)
+  }else{
+    # Extract estimates from the model
+    coef <- summary(model$value)$coefficients$cond
+    
+    # Turn to dataframe
+    dataCoef <- data.frame(coef)
+    
+    # Extract coefficient from the chosen explanatory variable
+    interestCoefs <- c(dataCoef[effectVar,]$Estimate,
+                       dataCoef[effectVar,]$Estimate - 1.96 * dataCoef[effectVar,]$Std..Error,
+                       dataCoef[effectVar,]$Estimate + 1.96 * dataCoef[effectVar,]$Std..Error)
+    
+    # Rescale parameter if needed
+    if (rescale){
+      interestCoefs <- sapply(interestCoefs, function(x) x / sd(data[,effectVar]))
+    }
+    
+    # Back-transform the coefficients according to the distribution
+    trends <- sapply(interestCoefs, function(x) transformDistrib(x * varRange, distribution))
+    
+    # Extract the trend from the estimates 
+    # "For an increase of x in year, the mean count was multiplied by trend"
+    trend <- trends[1]
+    
+    # Turn the trend to a percentage of variation
+    # "For an increase of x in year, the mean count was in/decreased by perc"
+    perc <- 100 * (trend - 1)
+    
+    # Extract the lower and upper bounds of the interval confidence around perc
+    percInf <- 100 * (trends[2] - 1)
+    percSup <- 100 * (trends[3] - 1)
+    
+    # Create a list with those indicators
+    coefList <- list(trend = trend, perc = perc, percInf = percInf, percSup = percSup)
+    
+    # Round those indicators so that only 2 decimals are kept
+    coefList <- lapply(coefList, function(x) round(x, 2)) 
+    
+    return(coefList)
   }
-  
-  # Back-transform the coefficients according to the distribution
-  trends <- sapply(interestCoefs, function(x) transformDistrib(x * varRange, distribution))
-  
-  # Extract the trend from the estimates 
-  # "For an increase of x in year, the mean count was multiplied by trend"
-  trend <- trends[1]
-  
-  # Turn the trend to a percentage of variation
-  # "For an increase of x in year, the mean count was in/decreased by perc"
-  perc <- 100 * (trend - 1)
-  
-  # Extract the lower and upper bounds of the interval confidence around perc
-  percInf <- 100 * (trends[2] - 1)
-  percSup <- 100 * (trends[3] - 1)
-  
-  # Create a list with those indicators
-  coefList <- list(trend = trend, perc = perc, percInf = percInf, percSup = percSup)
-  
-  # Round those indicators so that only 2 decimals are kept
-  coefList <- lapply(coefList, function(x) round(x, 2))
-  
-  return(coefList)
-  
   
 }
 

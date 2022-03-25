@@ -6,6 +6,7 @@
 #' @param interestVar a `string` containing the variable of interest
 #' @param fixedEffects a `vector` containing variables that should be treated as fixed effects
 #' @param randomEffects a `vector` containing variables that should be treated as random effects 
+#' @param effectVar a `string` that is the independent variable whose effect we are interested in 
 #' 
 #' @return
 #' A 2 elements list with :
@@ -17,13 +18,14 @@
 checkData <- function(data, type = NULL,
                       interestVar = NULL, 
                       fixedEffects = NULL, 
-                      randomEffects = NULL){
+                      randomEffects = NULL,
+                      effectVar = "year"){
   
   # All variables that should be contained in dataframe 
   vars <- c("year", "species", "site", "ID")
   
   # Add effects to the vector
-  vars <- c(vars, interestVar, fixedEffects, randomEffects)
+  vars <- c(vars, interestVar, fixedEffects, randomEffects, effectVar, unlist(nestedEffects))
   
   # Add a "point" or "transect" variable
   if (!is.null(type)){
@@ -43,9 +45,16 @@ checkData <- function(data, type = NULL,
     return(FALSE)
     
   }
+  # If the effectVar is not a continuous variable, stop the process
+  else if (!is.numeric(data[,effectVar])){ 
+    stop("The variable effectVar : ", effectVar, ", should be numeric !\n",
+         "Please check that you chose the correct variable and that it has proper format.")
+    }
+  
+  
   # If all variables are found in the dataframe
   else{
-    message("Your dataframe has proper column names\n",
+    message("Your dataframe has proper column names and \n",
             "You can proceed to further analysis !")
     return(TRUE)
   }

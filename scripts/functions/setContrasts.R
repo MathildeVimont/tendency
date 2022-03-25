@@ -9,7 +9,7 @@
 #' @return a `data.frame` with the right contrasts set
 #' 
 #' #' @example
-setContrasts <- function(data, factorVariables = NULL, contr = NULL){
+setContrasts <- function(data, factorVariables = NULL, contr = NA){
   
   # Check that there are indeed factor variables to be treated
   if(!is.null(factorVariables)){
@@ -29,12 +29,8 @@ setContrasts <- function(data, factorVariables = NULL, contr = NULL){
       fLevels <- levels(data[,f])
       
       # If the contrast type is not known, force it to the first level
-      if (ifelse(is.null(contrVar), TRUE, !(contrVar %in% c("mean", fLevels)))){
-        
+      if (is.na(contrVar)){
         contrVar = fLevels[1]
-        message(paste0("Contrast associated with the variable '",f,
-                       "' is not specified or not recognized. It has been ",
-                       "changed to : estimate(", fLevels[1],") = 0."))
       }
       
       # If contrasts should be set to sum(estimate) = 0
@@ -57,12 +53,18 @@ setContrasts <- function(data, factorVariables = NULL, contr = NULL){
                                       ncol = nbCols, 
                                       byrow = T)
         
+        message(paste0("Contrast associated with the variable '",f,
+                       "' has been set to the mean of all levels"))
+        
         
         # If contrasts should be set to a specific column of reference
         # Relevel the variable, beginning by the reference factor
       }else if (contrVar %in% fLevels){
         data[,f] <- factor(x = data[,f], 
                            levels = c(contrVar, fLevels[-which(contrVar == fLevels)]) )
+        
+        message(paste0("Contrast associated with the variable '",f,
+                       "' has been set to : ", contrVar))
         
         
         

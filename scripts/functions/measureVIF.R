@@ -9,8 +9,12 @@
 #' @example 
 measureVIF <- function (model) {
   
+  if(is.null(model)){
+    stop("Parameter 'model' is NULL, VIF cannot be infered.")
+    
+  }
   # Extract variance-Covariance matrix from model output
-  v <- vcov(model)$cond
+  v <- vcov(model$value)$cond
   
   # If there is only one variable treated as fixed effect, do not measure VIF.
   if (dim(v)[1] <= 2){

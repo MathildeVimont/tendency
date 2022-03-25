@@ -56,7 +56,7 @@ writeFormula <- function(interestVar = "count",
   if (length(nestedEffects)>0){
 
     for (nE in nestedEffects){
-      nestedEffectTerm <- paste0("(",nE[1], "|", nE[2], ")")
+      nestedEffectTerm <- paste0("(1|",nE[2],"/",nE[1],")")
       regrFormula <- paste0(regrFormula, " + ", nestedEffectTerm)
     }
   }
