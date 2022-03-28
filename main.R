@@ -48,12 +48,12 @@ dir.create(path = paste0(resDir, "GLOBAL/YEAR/"), showWarnings = F)
 dir.create(path = paste0(resDir, "GLOBAL/MAP/"), showWarnings = F)
 dir.create(path = paste0(resDir, "GLOBAL/TREND/"), showWarnings = F)
 
-# Importation des librairies
-source(paste0(scrDir, "basic/libraries.R"))
-
 # Importation des fonctions
 sapply(X = list.files(paste0(scrDir,"functions/"), pattern = "*.R"), 
        FUN = function(x) source(paste0(scrDir,"functions/", x), encoding = "UTF-8", .GlobalEnv))
+
+# Importation des librairies
+source(paste0(scrDir, "basic/libraries.R"))
 
 # Importation des paramètres généraux
 source(paste0(scrDir, "basic/parameters.R"))

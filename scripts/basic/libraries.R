@@ -2,17 +2,24 @@
 # Installation des librairies #
 ###############################
 
-# Liste des packages requis
-listPackages <- c("lubridate", "tidyverse", "data.table", "stringr", 
-                  "glmmTMB", "DHARMa", "knitr", "kableExtra", 
-                  "flexdashboard", "maps")
+needRestore <- TRUE
 
-# Installation des packages non installés
-packagesToInstall <- setdiff(listPackages, rownames(installed.packages()))
-
-if(length(packagesToInstall) > 0){
-  install.packages(packagesToInstall)  
+while(needRestore){
+  issue <- catchConditions(renv::restore(confirm = FALSE))
+  needRestore = !is.null(issue$error)
 }
+
+# # Liste des packages requis
+# listPackages <- c("lubridate", "tidyverse", "data.table", "stringr", 
+#                   "glmmTMB", "DHARMa", "knitr", "kableExtra", 
+#                   "flexdashboard", "maps")
+# 
+# # Installation des packages non installés
+# packagesToInstall <- setdiff(listPackages, rownames(installed.packages()))
+# 
+# if(length(packagesToInstall) > 0){
+#   install.packages(packagesToInstall)  
+# }
 
 
 ##############################
