@@ -99,12 +99,13 @@ plotTrend <- plotGLM(summary = annualSum, modelCat = interAnnualModel,
                      path = paste0(resDir, "GLOBAL/TREND/"))
 
 # Sauvegarde de la tendance globale
-saveGlobalTrends(sp = sp, data = dataSp, interestVar = interestVar, annualMod = annualModel,
-                 annualSum = annualSum, coefs = coefs, path = paste0(resDir, "GLOBAL/"), vif = vif)
+saveGlobalTrends(sp = sp, data = dataSp, interestVar = interestVar, effectVar = effectVar, 
+                 distribution = automaticDistrib$distribution, model = annualModel, summary = annualSum, 
+                 coefs = coefs, vif = vif, path = paste0(resDir, "GLOBAL/"))
 
 # Save yearly variations  
-saveYearlyVariations(sp = sp, data = dataSp, interestVar = interestVar, 
-                     interAnnualMod = interAnnualModel, interAnnualSum = interAnnualSum, 
-                     contr = contrEffect, effectVar = effectVar, path = paste0(resDir, "GLOBAL/"))
+saveYearlyVariations(sp = sp, data = dataSp, interestVar = interestVar, effectVar = effectVar, 
+                     model = interAnnualModel, summary = interAnnualSum,  contr = contrEffect, 
+                     path = paste0(resDir, "GLOBAL/"))
 
 cat(" --> DONE\n")

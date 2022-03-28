@@ -96,7 +96,7 @@ if(check){
   #################
   
   listAll <- list()
-  for (sp in speciesList[5:length(speciesList)]){
+  for (sp in speciesList){
 
     cat("Species ", sp, " is going under analysis\n")
     

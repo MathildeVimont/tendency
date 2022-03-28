@@ -7,9 +7,7 @@
 #' @param effectVar a `string` specifying the explaining variable to stuty
 #' @param distribution a `string` specifying the distribution used in the model
 #' 
-#' @return nothing
-#'
-#' @export
+#' @return a `string` that corresponds to the category of decline/increase of the species 
 #'
 #' @example 
 affectCatEBCC <- function(summary, effectVar = "year", distribution){
@@ -23,17 +21,17 @@ affectCatEBCC <- function(summary, effectVar = "year", distribution){
   }else{
     if(distribution %in% c('poisson', 'nbinom2')){
       # Extract the significance of the trend
-      sign = summary[,effectVar]$Significatif == "Oui" 
+      sign = summary[effectVar,]$Significatif == "Oui" 
       
       # Extract the certainty of the trend
-      cert = as.numeric(summary[,effectVar]$IC_sup) < 1.05 
-      cert = cert | as.numeric(summary[,effectVar]$IC_inf) > 0.95
+      cert = as.numeric(summary[effectVar,]$IC_sup) < 1.05 
+      cert = cert | as.numeric(summary[effectVar,]$IC_inf) > 0.95
       
       # Extract the intensity of the decline
-      intenseDecline = as.numeric(summary[,effectVar]$IC_sup) < 0.95
+      intenseDecline = as.numeric(summary[effectVar,]$IC_sup) < 0.95
       
       # Extract the intensity of the increase
-      intenseIncrease = as.numeric(summary[,effectVar]$IC_inf) > 1.05
+      intenseIncrease = as.numeric(summary[effectVar,]$IC_inf) > 1.05
       
       # If the trend is not significant but close to stability
       if(!sign & cert){
