@@ -34,11 +34,11 @@ saveGlobalTrends <- function(sp, data, interestVar, effectVar,
   ########################
   # INITIALIZE DATAFRAME #
   ########################
-  dataTrend <- matrix(nrow = 1, ncol = 18)
+  dataTrend <- matrix(nrow = 1, ncol = 20)
   dataTrend <- as.data.frame(dataTrend)
   colnames(dataTrend) <- c("species", "nbObs", "nbYear", "totAbundance", "vif",
-                           "intercept", "interceptInf", "interceptSup", "interceptPval",
-                           "estimate", "estimateInf", "estimateSup", "estimatePval",
+                           "intercept", "interceptSE", "interceptInf", "interceptSup", "interceptPval",
+                           "estimate", "estimateSE", "estimateInf", "estimateSup", "estimatePval",
                            "trend", "trendInf", "trendSup", "significance", "category")
   
   ##################
@@ -58,8 +58,8 @@ saveGlobalTrends <- function(sp, data, interestVar, effectVar,
   dataTrend$totAbundance <- sum(data[, interestVar])
   
   # Extract vif when available
-  if(is.null(vif$error)&class(vif$value) != "character"){
-    dataTrend$vif <- vif$value[, interestVar]
+  if(is.null(vif$error) & class(vif$value) != "character"){
+    dataTrend$vif <- vif$value[, effectVar]
   }
   
   # Extract model outputs when convergence has been reached
@@ -67,12 +67,14 @@ saveGlobalTrends <- function(sp, data, interestVar, effectVar,
     
     # Extract intercept and upper/lower value of its interval confidence
     dataTrend$intercept <- as.numeric(summary["(Intercept)",]$Estimates)
+    dataTrend$interceptSE <- as.numeric(summary["(Intercept)",]$`Standard Errors`)
     dataTrend$interceptInf <- as.numeric(summary["(Intercept)",]$IC_inf)
     dataTrend$interceptSup <- as.numeric(summary["(Intercept)",]$IC_sup)
     dataTrend$interceptPval <- as.numeric(summary["(Intercept)",]$`P Values`)
     
     # Extract estimates and upper/lower value of its interval confidence
     dataTrend$estimate <- as.numeric(summary[effectVar, ]$Estimates)
+    dataTrend$estimateSE <- as.numeric(summary[effectVar, ]$`Standard Errors`)
     dataTrend$estimateInf <- as.numeric(summary[effectVar, ]$IC_inf)
     dataTrend$estimateSup <- as.numeric(summary[effectVar, ]$IC_sup)
     dataTrend$estimatePval <- as.numeric(summary[effectVar, ]$`P Values`)

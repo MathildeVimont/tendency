@@ -88,16 +88,17 @@ makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
   if(distribution %in% c("poisson", "nbinom2")){
     model <- catchConditions(glmmTMB(formula, data = data, 
                                      family = distribution, 
-                                     ziformula = ziFormula,
-                                     control = glmmTMBControl(profile = T)))
+                                     ziformula = ziFormula))
     
-    # If 1st convergence issue, erase the profile = T argument
+    # If 1st convergence issue, add an option profile = T argument
     convIssue <- identifyConvIssue(model)
     
     if(convIssue){
+
       model <- catchConditions(glmmTMB(formula, data = data, 
                                        family = distribution, 
-                                       ziformula = ziFormula))
+                                       ziformula = ziFormula,
+                                       control = glmmTMBControl(profile = quote(length(parameters$beta)>=5))))
       
     }
     

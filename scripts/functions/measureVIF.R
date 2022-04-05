@@ -9,8 +9,8 @@
 #' @example 
 measureVIF <- function (model) {
   
-  if(is.null(model)){
-    stop("Parameter 'model' is NULL, VIF cannot be infered.")
+  if(identifyConvIssue(model)){
+    stop("The model encountered a convergence issue, VIFs cannot be infered.")
     
   }
   # Extract variance-Covariance matrix from model output
