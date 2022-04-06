@@ -8,6 +8,7 @@
 #' @param randomEffects a `vector` of variables that should be treated as random effects
 #' @param nestedEffects a `list` of 2-elements vector, containing nested effects 
 #' @param factorVariables a `vector` of variables that should be treated as factors
+#' @param poly a `list` of 2-elements vectors with variable that should be treated as polynomial
 #' @param contrasts a `vector` containing the contrasts that should be applied to the categorical variables
 #' @param distribution a `string` containing the chosen distribution between "gaussian", "poisson", "binomial", "betabinomial", "nbinom2" (by default : "gaussian")
 #' @param zi a `boolean` that is `TRUE` if zero-inflation should be taken into account
@@ -24,7 +25,7 @@
 #' @example
 makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
                     randomEffects = NULL, nestedEffects = NULL,
-                    factorVariables = NULL, contr = NA,
+                    factorVariables = NULL, poly = NULL, contr = NA,
                     distribution = "gaussian", zi = FALSE, 
                     nTry = NULL, scaling = FALSE, intercept = TRUE){
   
@@ -72,7 +73,7 @@ makeGLM <- function(data, interestVar = "count", fixedEffects = NULL,
                           fixedEffects = fixedEffects,
                           randomEffects = randomEffects,
                           nestedEffects = nestedEffects,
-                          intercept = intercept)
+                          poly = poly, intercept = intercept)
   
   # To take zero-inflation into account
   ziFormula <- formula("~0") 

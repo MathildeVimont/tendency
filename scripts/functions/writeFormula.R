@@ -4,6 +4,7 @@
 #' 
 #' @param interestVar a `string` containing the name of the dependent variable
 #' @param fixedEffects a `vector` of variables that should be treated as fixed effects
+#' @param poly a `list` of 2-elements vectors with variable that should be treated as polynomial
 #' @param randomEffects a `vector` of variables that should be treated as random effects 
 #' @param nestedEffects a `list` of 2-elements vectors with variable names that should be treated as nested effects 
 #' @param interactions a `list` of 2-elements vectors with variable names whose interaction should be taken into account
@@ -15,6 +16,7 @@
 #' @example 
 writeFormula <- function(interestVar = "count",
                          fixedEffects = NULL, 
+                         poly = NULL,
                          randomEffects = NULL,
                          nestedEffects = list(),
                          interactions = list(),
@@ -35,6 +37,14 @@ writeFormula <- function(interestVar = "count",
     }
   }
   
+  ## Add polynomial effect
+  if (!is.null(poly)){
+    
+    for (p in poly){
+      regrFormula <- paste0(regrFormula, ' + poly(', p[[1]], ", ",p[[2]], ")")
+    }
+  }
+  
   ## Add random effects
   if (!is.null(randomEffects)){
     
@@ -42,15 +52,6 @@ writeFormula <- function(interestVar = "count",
       regrFormula <- paste0(regrFormula, " + (1|", effect, ")")
     }
   }
-  
-  # ## Add interactions
-  # if (length(interactions)>0){
-  #   
-  #   for (inter in interactions){
-  #     interactionTerm <- paste0(inter[1], ":", inter[2])
-  #     regrFormula <- paste0(regrFormula, " + ", interactionTerm)
-  #   }
-  # }
   
   ## Add nested effects
   if (length(nestedEffects)>0){
