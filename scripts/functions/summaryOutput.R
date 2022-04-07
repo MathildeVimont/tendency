@@ -6,6 +6,7 @@
 #' @param data a `dataframe` containing the observations used for the regression.
 #' @param distribution a `string` that is the distribution used in the model ("gaussian", "poisson", "binomial", "betabinomial", "nbinom2")
 #' @param factorVariables a `vector` containing variables that should be treated as factor
+#' @param poly a `list` of 2-elements vectors with variable that should be treated as polynomial
 #' @param transform a `boolean`, TRUE if coefficients should be tranformed due to distribution
 #' @param rescale a `boolean`, TRUE if numeric variables estimates should be rescaled
 #' @param fixedEffects a `vector` containing variables that have been used as fixed effects. `NULL` if rescale = FALSE. 
@@ -81,6 +82,18 @@ summaryOutput <- function(model,
     # Reorder columns
     dataCoef = dataCoef[,c("Estimates", "Standard Errors", "IC_inf", 
                            "IC_sup", "P Values", "Significatif")]
+    ############
+    # ROWNAMES #
+    ############
+    # Reformat and rename rows associated with polynomial variables
+    if(!is.null(poly)){
+      for (p in poly){
+  
+        indPoly <- grep(p[[1]], rownames(dataCoef))
+        
+        rownames(dataCoef)[indPoly] <- sapply(1:length(indPoly), function(x){paste0(p[[1]], " : poly", x)})
+      }
+    }
     
     # Reformat and rename rows associated with factor variables
     if (!is.null(factorVariables)){

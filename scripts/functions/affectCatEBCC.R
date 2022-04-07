@@ -27,6 +27,9 @@ affectCatEBCC <- function(summary, effectVar = "year", distribution){
       cert = as.numeric(summary[effectVar,]$IC_sup) < 1.05 
       cert = cert | as.numeric(summary[effectVar,]$IC_inf) > 0.95
       
+      # Increasing or decreasing ?
+      evol = as.numeric(summary[effectVar,]$Estimates) >= 1
+      
       # Extract the intensity of the decline
       intenseDecline = as.numeric(summary[effectVar,]$IC_sup) < 0.95
       
@@ -42,19 +45,19 @@ affectCatEBCC <- function(summary, effectVar = "year", distribution){
         catEBCC <- "Incertain"
       }
       # If the trend is significant and fast declining
-      else if(sign & intenseDecline){
+      else if(sign & !evol & intenseDecline){
         catEBCC <- "Fort déclin"
       }
       # If the trend is significant and low declining
-      else if(sign & !intenseDecline){
+      else if(sign & !evol & !intenseDecline){
         catEBCC <- "Déclin modéré"
       }
       # If the trend is significant and fast increasing
-      else if(sign & intenseIncrease){
+      else if(sign & evol  & intenseIncrease){
         catEBCC <- "Forte augmentation"
       }
       # If the trend is significant and low increasing
-      else if(sign & !intenseIncrease){
+      else if(sign & evol & !intenseIncrease){
         catEBCC <- "Augmentation modérée"
       }
     }else{

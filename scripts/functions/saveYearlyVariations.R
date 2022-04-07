@@ -41,13 +41,13 @@ saveYearlyVariations <- function(sp, data, interestVar, effectVar = "year",
   }
   
   # Initialize the proper sized dataframe
-  dataTrend <- matrix(nrow = length(eff) + 1, ncol = 11)
+  dataTrend <- matrix(nrow = length(eff) + 1, ncol = 12)
   dataTrend <- as.data.frame(dataTrend)
   
   # Initialize the column names
   colnames(dataTrend) <- c("species", "nbObs", "nbYear", "totAbundance", 
-                           "contrast", effectVar, "estimate", "estimateInf", 
-                           "estimateSup", "pval", "significance")
+                           "contrast", effectVar, "estimate", "estimateSE", 
+                           "estimateInf", "estimateSup", "pval", "significance")
   
   ##################
   # FILL DATAFRAME #
@@ -79,6 +79,9 @@ saveYearlyVariations <- function(sp, data, interestVar, effectVar = "year",
     
     # Add the estimate value
     dataTrend$estimate <- as.numeric(summary[ind, "Estimates"])
+    
+    # Add the standard error value
+    dataTrend$estimate <- as.numeric(summary[ind, "Standard Errors"])
     
     # Add the lower value of the confidence interval
     dataTrend$estimateInf <- as.numeric(summary[ind, "IC_inf"])

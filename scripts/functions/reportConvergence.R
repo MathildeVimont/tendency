@@ -67,7 +67,10 @@ reportConvergence <- function(data, path){
   spNoVar <- unique(dataVar[is.na(dataVar$estimate),]$species)
   
   if (length(spNoTrend) > 0){
-    spNoVar <- spNoVar[-match(spNoTrend,spNoVar)] 
+    commonSp <- match(spNoTrend,spNoVar)
+    commonSp <- commonSp[!is.na(commonSp)]
+    
+    spNoVar <- spNoVar[-commonSp] 
   }
   
   # Format vectors containing non converging species

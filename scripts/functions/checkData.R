@@ -60,3 +60,91 @@ checkData <- function(data, type = NULL,
   }
   
 }
+
+
+
+
+
+# checkData <- function(data, 
+#                       interestVar = NULL, 
+#                       fixedEffects = NULL, 
+#                       randomEffects = NULL,
+#                       nestedEffects = NULL, 
+#                       factorVariables = NULL,
+#                       poly = NULL,
+#                       effectVar = "year"){
+#   
+#   # Initialize a check variable
+#   check = TRUE
+#   
+#   # All variables that should be contained in dataframe 
+#   vars <- c("year", "species", "site", "ID")
+#   
+#   # Add effects to the vector
+#   vars <- c(vars, interestVar, fixedEffects, randomEffects, effectVar, unlist(nestedEffects))
+#   
+#   # Make sure the vector has unique values
+#   vars <- unique(vars)
+#   
+#   ##########################################
+#   # PRESENCE OF VARIABLES IN THE DATAFRAME #
+#   ##########################################
+#   # If some variables are not found in the dataframe
+#   if (any(!(vars %in% colnames(data)))){
+#     check = FALSE
+#     missingVars <- vars[which(!(vars %in% colnames(data)))]
+#     
+#     stop("Missing Variables in dataframe: ", missingVars, "\n",
+#          "Please provide a dataframe containing those variables")
+#   }
+#   
+#   ############################
+#   # CHECK CLASS OF EFFECTVAR #
+#   ############################
+#   
+#   # Check that effectVar is numeric 
+#   if (!is.numeric(data[,effectVar])){ 
+#     check = FALSE
+#     stop("The variable effectVar : ", effectVar, ", should be numeric !\n",
+#          "Please check that you chose the correct variable and that it has proper format.")
+#   }
+#   
+#   ####################################################
+#   # CHECK THAT FACTORS HAVE BEEN SET IN FIXEDEFFECTS #
+#   ####################################################
+#   
+#   # If the effectVar is not a continuous variable, stop the process
+#   if(!is.null(factorVariables) {
+#     numVar <- match(factorVariables, fixedEffects) }
+#     
+#     if (!is.numeric(data[,effectVar])){ 
+#       check = FALSE
+#       stop("The variable effectVar : ", effectVar, ", should be numeric !\n",
+#            "Please check that you chose the correct variable and that it has proper format.")
+#     }
+#     
+#     ###################################################################
+#     # CHECK THAT FIXED EFFECTS ARE NUMERIC IF NOT IN FACTOR VARIABLES #
+#     ###################################################################
+#     
+#     # If the effectVar is not a continuous variable, stop the process
+#     match(factorVariables, fixedEffects)
+#     
+#     if (!is.numeric(data[,effectVar])){ 
+#       check = FALSE
+#       stop("The variable effectVar : ", effectVar, ", should be numeric !\n",
+#            "Please check that you chose the correct variable and that it has proper format.")
+#     }
+#     
+#     
+#     #########################
+#     # IF EVERYTHING IS OKAY #
+#     #########################
+#     if(check){
+#       message("Your dataframe has proper column names and is correctly formatted.\n",
+#               "You can proceed to further analysis !")
+#       
+#     }
+#     return(check)
+#     
+# }
