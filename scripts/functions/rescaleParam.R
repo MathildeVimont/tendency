@@ -39,7 +39,7 @@ rescaleParam <- function(dataCoef, data,
       sdVar <- sd(data[,v], na.rm = T)
       
       # Calculate new coefficients and standard deviations for the considered variable
-      # Bs = B(X) / sd(X)
+      # B = Bs(X) / sd(X)
       dataCoef[v,]$Estimate <- dataCoef[v,]$Estimate / sdVar
       dataCoef[v,]$Std..Error <- dataCoef[v,]$Std..Error / sdVar
       
