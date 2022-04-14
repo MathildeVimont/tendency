@@ -5,13 +5,16 @@ rm(list = ls())
 ######################################
 
 # Chemin d'accès au package
-dir = "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/git/tendency/"
+dir = "C:/Users/mvimont01/Documents/MNHN/Tendances/Code/tendency/"
 
 # Quelle est la variable d'abondance à étudier ?
 interestVar <- "abondance"
 
-# Quels sont les effets fixes à considérer ?
+# Quels sont les effets fixes à considérer (numériques et catégoriels) ?
 fixedEffects <- c("year") 
+
+# Quels sont les effets polynomiaux à considérer ?
+poly <- NULL # list(c("longitude",2), c("latitude",2)) 
 
 # Quels sont les effets aléatoires à considérer ?
 randomEffects <- c("site")

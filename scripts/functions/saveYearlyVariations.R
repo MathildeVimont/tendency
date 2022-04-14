@@ -81,7 +81,7 @@ saveYearlyVariations <- function(sp, data, interestVar, effectVar = "year",
     dataTrend$estimate <- as.numeric(summary[ind, "Estimates"])
     
     # Add the standard error value
-    dataTrend$estimate <- as.numeric(summary[ind, "Standard Errors"])
+    dataTrend$estimateSE <- as.numeric(summary[ind, "Standard Errors"])
     
     # Add the lower value of the confidence interval
     dataTrend$estimateInf <- as.numeric(summary[ind, "IC_inf"])

@@ -20,6 +20,7 @@ summaryOutput <- function(model,
                           data,
                           distribution = "gaussian", 
                           factorVariables = NULL,
+                          poly = NULL,
                           transform = FALSE,
                           rescale = FALSE,
                           fixedEffects = NULL,
@@ -65,7 +66,7 @@ summaryOutput <- function(model,
     dataCoef <- apply(X = dataCoef, 
                       MARGIN = 2, 
                       FUN = function(x) {
-                        formatC(x, format = "e", digits = 3)
+                        formatC(x, format = "e", digits = 4)
                       })
     
     
