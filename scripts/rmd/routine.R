@@ -51,8 +51,7 @@ coefs <- analyseCoef(model = annualModel,
                      rescale = scaling,
                      data = dataSp,
                      distribution = automaticDistrib$distribution, 
-                     effectVar = effectVar,
-                     varRange = max(dataSp[,effectVar]) - min(dataSp[,effectVar]))
+                     effectVar = effectVar)
 
 cat(ifelse(identifyConvIssue(annualModel), " --> CONVERGENCE ISSUE\n"," --> DONE\n"))
 

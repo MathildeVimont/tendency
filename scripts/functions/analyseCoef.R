@@ -7,7 +7,6 @@
 #' @param data a `data.frame` containing data of the regression variables
 #' @param distribution a `string` that is the distribution used in the model ("gaussian", "poisson", "binomial")
 #' @param effectVar a `string` that is the explanatory variable we aim to study (ex : "year")  
-#' @param varRange an `integer`, that is the range of values of the effectVar. Default is 1.
 #' 
 #' @return 
 #' A list of 4 elements:
@@ -23,8 +22,7 @@ analyseCoef <- function(model,
                         rescale = F,
                         data = NULL,
                         distribution, 
-                        effectVar = "year", 
-                        varRange = 1){
+                        effectVar = "year"){
   
   # Deal with convergence issue
   if(identifyConvIssue(model)){
@@ -32,6 +30,9 @@ analyseCoef <- function(model,
     
     return(NULL)
   }else{
+    # Extract range of effectVar variable
+    varRange <- max(data[, effectVar]) - min(data[, effectVar])
+    
     # Extract estimates from the model
     coef <- summary(model$value)$coefficients$cond
     
