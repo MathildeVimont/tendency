@@ -7,7 +7,7 @@ output: github_document
 
 # Avant-propos
 
-Cette suite d’outils R doit permettre d’analyser les données d’abondance d’espèces, et d’extraire une tendance d’évolution dans le temps. Le calcul de cette tendance passe notamment par des modèles de régression linéaire généralisée mixte, détaillés dans la partie **XXXX** du document. Un ensemble de fonctions a ainsi été implémenté pour réaliser ce type de modèles, mettre en fome les résultats et créer un certain nombre de visualisations des données et des résultats.
+Cette suite d’outils R doit permettre d’analyser les données d’abondance d’espèces, et d’extraire une tendance d’évolution dans le temps. Le calcul de cette tendance passe notamment par des modèles de régression linéaire généralisée mixte. Un ensemble de fonctions a ainsi été implémenté pour réaliser ce type de modèles, mettre en fome les résultats et créer un certain nombre de visualisations des données et des résultats.
 
 La suite de ce README a un double objectif : 
 
@@ -15,21 +15,21 @@ La suite de ce README a un double objectif :
 
 - documenter les différentes fonctions mises en place dans ce projet et l'ensemble de leurs fonctionnalités, en donnant des exemples concrets de leur utilisation.
 
-# Installer l'environnement
+# I. Installer l'environnement
 
-## Répertoires
+## 1. Répertoires
 
 L'outil est organisé de sorte que chaque aspect du projet soit contenu dans un répertoire spécifique. Le répertoire racine où se trouve le README, doit être renseigné par l'utilisateur sous le nom de `rootDir`. L'ensemble des scripts peuvent être trouvés dans le répertoire **scripts**, dont le chemin sera nommé `scrDir` dans la suite et l'ensemble des données à analyser doivent être placées dans le répertoire **data** dont le chemin sera contenu dans `dataDir`.
 
 ```{r repertories, echo=TRUE, message = FALSE, warning = FALSE}
-rootDir <- "C:/Users/STOC/Documents/Mathilde Vimont/Tendances/Code/git/tendency/"
+rootDir <- "C:/Users/mvimont01/Documents/MNHN/Tendances/Code/tendency/"
 
 scrDir <- paste0(rootDir, "scripts/")
 dataDir <- paste0(rootDir, "data/")
 
 ```
 
-## Fonctions 
+## 2. Fonctions 
 
 L'ensemble des fonctions mises en place dans cet outil sont accessibles au niveau du chemin suivant **scripts/functions** à partir de la racine `rootDir`. Le bloc de code suivant permet de charger l'ensemble de ces fonctions.
 
@@ -39,7 +39,7 @@ sapply(X = list.files(paste0(scrDir,"functions/"), pattern = "*.R"),
 
 ```
 
-## Librairies 
+## 3. Librairies 
 
 Un certain nombre de packages sont nécessaires au bon fonctionnement des calculs de tendance. Pour éviter tout problème lié aux versions des packages, toute première utilisation de cet outil nécessite l'installation des packages aux versions telles que spécifiées dans le fichier `renv.lock` via l'utilisation de la commande suivante :
 
@@ -53,22 +53,22 @@ while(needRestore){
   
 ```
 
-Cette commande peut **prendre du temps** à tourner. Une fois terminée, il faut éteindre R / RStudio pour que l'environnement soit correctement installé. Dans le cas où l'utilisateur ne souhaite pas utiliser la routine de calcul (voir section **XXXX**), les étapes précédentes doivent être réitérées, une fois R éteint et rallumé, et les packages chargés. Les packages nécessaires au bon fonctionnement du calcul de tendances sont regroupés dans le fichier *librairies.R* dont le chemin est le suivant **scripts/basic** à partir de la racine `rootDir`. La commande suivante permet de charger l'ensemble des packages :
+Cette commande peut **prendre du temps** à tourner. Une fois terminée, il faut éteindre R / RStudio pour que l'environnement soit correctement installé. Une fois R éteint et rallumé, et dans le cas où l'utilisateur ne souhaite pas utiliser la routine de calcul décrite en section **III**, les étapes précédentes doivent être réitérées, et les packages chargés. Les packages nécessaires au bon fonctionnement du calcul de tendances sont regroupés dans le fichier *librairies.R* dont le chemin est le suivant **scripts/basic** à partir de la racine `rootDir`. La commande suivante permet de charger l'ensemble des packages :
 
 ```{r library, echo=TRUE, warning=FALSE, message = FALSE}
 source(paste0(scrDir, "basic/libraries.R"))
 
 ```
 
-## Données
+## 4. Données
 
 L'ensemble des données doit être déposé dans le répertoire **data**. Elles peuvent contenir de nombreuses informations relatives aux observations et conditions d'observation des espèces. Parmi celles nécessaires au bon déroulé de l'analyse :
 
-- le champ `species` est **obligatoire**, et doit contenir le nom/l'identifiant de l'espèce observée ;
+- le champ `species` est **obligatoire**, et doit contenir le nom/l'identifiant de l'espèce observée. **Attention**, il est préférable d'éviter tout caractère spécial dans ce champ ;
 
 - le champ `year` est **obligatoire**, et doit contenir l'année d'observation de l'espèce ;
 
-- le champ `transect` (ou `point`) est **facultatif**, et constitue l'échelle la plus fine d'observation. Elle est accompagnée d'un champ `site` **obligatoire**, qui est associé à un ou plusieurs `transect` (ou `point`) ;
+- le champ `transect` (ou `point`) est **facultatif**, et constitue l'échelle la plus fine d'observation. Elle doit être accompagnée d'un champ `site` **obligatoire**, qui est associé à un ou plusieurs `transect` (ou `point`) ;
 
 - le champ `ID` est **obligatoire**, et correspond à un identifiant unique **date + site (+ point/transect)** ;
 
@@ -84,16 +84,18 @@ L'ensemble des données doit être déposé dans le répertoire **data**. Elles 
 | 2020_A1_a18| Pinson des arbres     | 2020 | A1   | a18    |
 
 
-# Routine d'analyses
-Une fois que l'on a formaté les données, et que l'on a déterminé les variables et la distribution des résidus, 
+# II. Fonctions individuelles
+Une fois que l'utilisateur a pris connaissance de l'installation de l'environnement de cet outil, et du format des données nécessaire à son bon fonctionnement, l'utilisateur a deux possibilités : 
 
-# Fonctions individuelles
+- ou bien utiliser la routine d'analyses accessible dans le `main.R`, permettant l'analyse des tendances de différentes espèces en routine. Il peut alors prendre connaissance de cette section pour bien comprendre le fonctionnement de cette routine de calculs ;
 
-## Charger les données
+- ou bien utiliser les fonctionnalités de l'outil indépendamment de la routine, auquel cas l'utilisateur est encouragé à lire l'encart **Fonctions individuelles**.
+
+## 1. Charger les données
 
 La fonction `importData` permet d'importer les données présentes dans le répertoire **data** même si les données sont séparées en plusieurs sous-jeux de données.
 
-```{r data, echo=TRUE}
+```{r data, echo = TRUE}
 data <- importData(path = dataDir)
 ```
 
@@ -103,20 +105,92 @@ Les données sont donc maintenant disponibles dans R, sous le nom de : `data`.
 head(data)
 ```
 
-## Gérer les absences 
+## 2. Gérer les absences 
 
 Les jeux de données d'abondance peuvent parfois être transmis sans données d'absence, ou bien à cause du volume qu'elles représenteraient, ou bien parce que le protocole ne prévoit pas l'enregistrement des absences. La fonction `fillAbsence` a été imaginée pour reconstruire ces absences, selon deux méthodes :
 
 - `method = "once"` reconstruit seulement les absences pour les sites où l'espèce a été vue au moins une fois ;
 
-- `method = "all"` reconstruit les absences pour tous les sites x années de visite, indépendamment de la présence de l'espèce. **<!> Pas encore implémenté**
+- `method = "all"` reconstruit les absences pour tous les sites x années de visite, indépendamment de la présence de l'espèce. **<!> pas encore implémenté**
 
 ```{r fillAbsence, echo=TRUE}
 dataAll <- fillAbsence(data = data, interestVar = "count", method = "once")
 
 ```
 
-## Modéliser la tendance globale 
+## 3. Choisir les variables à inclure
+
+Cette étape ne repose pas sur une fonction existant dans le modèle, mais elle doit être bien réfléchie par l'utilisateur pour que les modèles utilisés soient pertinents. Elle consiste à choisir les variables à inclure dans le modèle. Cela passe par l'identification :
+
+- de la variable que l'on cherche à modéliser i.e, la variable à expliquer `interestVar`. Ici nous voulons modéliser l'abondance accessible dans le champ *count* ;
+
+```{r intVar, echo = T}
+summary(dataAll$abondance)
+```
+
+- le(s) variable(s) que l'on souhaite considérer comme des effets fixes `fixedEffects` ? Ici, nous nous intéressons particulièrement à l'effet de l'année *year* sur l'abondance mais nous souhaitons aussi contrôler pour l'effet de la localisation au travers des champs *longitude* et *latitude* ;
+
+```{r fixEff, include = T}
+# Year
+summary(dataAll$year)
+
+# Longitude
+summary(dataAll$longitude)
+
+# Latitude
+summary(dataAll$latitude)
+
+```
+
+- le(s) variable(s) que l'on souhaite considérer comme des effets aléatoires `randomEffects` ? Ici, le *site* peut avoir une influence forte sur l'abondance perçue. Il s'agit d'une variable catégorielle à beaucoup de niveaux. La considérer comme un effet aléatoire nous permet d'une part de garder de la puissance dans le calcul de tendances, et d'autre part de généraliser les résultats à l'ensemble des sites de France.
+
+```{r randEff, echo=TRUE}
+table(dataAll$site)[1:10]
+```
+
+On pourrait également ajouter :
+
+- des *effets emboîtés*, liés à l'échantillonnage. Par exemple, les points ne sont pas les mêmes d'un site à l'autre, ce qui pourrait donner un effet emboîté **point|site**, que nous ne testerons pas ici ;
+
+- des *effets polynomiaux*, par exemple intégrer à la fois la **longitude** et la **longitude^2** ; 
+
+- des *interactions* entre variables, quand on pense que l'effet d'une variable peut varier en fonction de la valeur d'une autre variable *(<!> non implémenté)* ;
+
+## 4. Choisir la distribution
+
+Une des étapes importantes de la régression est le choix de la **distribution des résidus**. Un régression linéaire classique repose sur l'hypothèse selon laquelle les résidus de la régression suivent une loi normale, ce qui est plutôt bien adapté à une variable à expliquer continue. 
+
+Cependant, les données d'abondance peuvent être particulières : il existe par exemple des données de *présence/absence* (0/1) ou encore des données de *comptage*, comme c'est le cas dans notre jeu de données. Cela pose la question de la pertinence de la distribution normale pour ce type de variable. 
+
+Les régressions linéaires généralisées **(GLM)** permettent un ensemble d'autres distributions, dont certaines ont été implémentées dans cet outil : 
+
+- la **distribution binomiale**, particulièrement adaptée aux données de présence/absence. *<!> non encore implémenté* ;
+
+- la **distribution de Poisson**, particulièrement adaptée aux données de comptage, mais qui impose néanmoins une contrainte très forte d'égalité entre moyenne et variance, ce qui peut entraîner des problèmes de sur-dispersion ;
+
+- la **distribution négative binomiale**, adaptée aux données de comptage et qui repose sur un paramètre de dispersion supplémentaire permettant de surmonter certains problèmes rencontrés avec la distribution de Poisson.
+
+
+La fonction `detectDistrib` permet de proposer une distribution pertinente à l'utilisateur, si celui-ci ne sait pas laquelle choisir. En l'occurrence, il impose :
+
+- dans le cas de données continues, une loi **normale** ;
+
+- dans le cas de données de comptage (valeurs positives et discrètes), une loi **négative binomiale** adaptée aux données de comptage mais plus flexible que la *loi de Poisson* (hypothèse forte d'égalité des moyenne et variance). Elle impose également une partie zéro-enflée au modèle, avec un simple intercept, pour gérer la grande quantité de 0 souvent associée à ces données ;
+
+- dans le cas de probabilités ou de données binaires, une loi **binomiale** *(<!> à implémenter)*.
+
+```{r distrib, echo=TRUE}
+distribParam = detectDistrib(data = dataAll, interestVar = "abondance", 
+                             distribution = NULL, zi = NULL)
+ 
+# Quelle est la distribution choisie ? 
+distribParam$distribution
+  
+# Besoin de faire un modèle zéro-englé ?
+distribParam$zi
+```
+
+## 4. Modéliser la tendance globale 
 
 La fonction `makeGLM` permet de réaliser des modèles linéaires généralisés mixtes. Cette fonction repose sur le package `glmmTMB`, qui a plusieurs avantages notamment l'implémentation de nombreuses distributions (dont la négative binomiale) et des temps de calcul plutôt faibles.
 
@@ -137,18 +211,19 @@ La fonction `makeGLM` contient de nombreux paramètres, notamment concernant la 
 - **zi** permet de spécifier si oui ou non, un modèle zéro-enflé avec intercept doit être évalué pour le modèle. 
 
 ```{r glm, echo=TRUE}
-mod <- makeGLM(data = dataSp, 
-               interestVar = "count", 
+mod <- makeGLM(data = dataAll, 
+               interestVar = "abondance", 
                fixedEffects = c("year","longitude","latitude"),
                randomEffects = "site", 
                nestedEffects = list(),
                factorVariables = NULL,
+               poly = NULL,
                distribution = "nbinom2",
                zi = TRUE,
                intercept = TRUE)  
 ```
 
-La fonction doit retourner une liste de 3 éléments :
+La fonction retourne une liste de 3 éléments :
 
 - `mod$value`, donne les résultats de la régression si aucune erreur n'a été rencontrée pendant le processus d'estimation des paramètres ;
 
@@ -162,61 +237,117 @@ mod$value
 mod$warnings
 ```
 
-- `mod$error`, liste l'ensemble des erreurs rencontrées pendant le processus d'estimation des paramètres. Si 
+- `mod$error`, liste l'ensemble des erreurs rencontrées pendant le processus d'estimation des paramètres.
 
 ```{r err, echo=TRUE}
 mod$error
 ```
 
-Par ailleurs, le processus d'estimation des paramètres peut être perturbé par la présence de paramètres numériques avec des plages de valeurs importantes et variables d'un paramètre à l'autre (ex : température entre 0 et 40°C vs. année entre 2000 et 2020). Pour cela, une astuce simple peut être de centrer/réduire les variables numériques. Cela est possible dans la fonction `makeGLM` au travers du paramètre `scaling = TRUE`.
+*A noter :* le processus d'estimation des paramètres peut être perturbé par la présence de paramètres numériques avec des plages de valeurs importantes et variables d'un paramètre à l'autre (ex : température entre 0 et 40°C vs. année entre 2000 et 2020). Pour cela, une astuce simple peut être de centrer/réduire les variables numériques. Cela est possible dans la fonction `makeGLM` au travers du paramètre `scaling = TRUE`.
 
 ```{r scaledglm, echo=TRUE}
-modScaled <- makeGLM(data = dataSp, 
-                     interestVar = "count", 
+modScaled <- makeGLM(data = dataAll, 
+                     interestVar = "abondance", 
                      fixedEffects = c("year","longitude","latitude"),
                      randomEffects = "site", 
                      nestedEffects = list(),
                      factorVariables = NULL,
+                     poly = NULL,
                      distribution = "nbinom2",
                      zi = TRUE,
                      intercept = TRUE,
                      scaling = TRUE)
 ```
 
-## Modéliser les variations inter-annuelles
+## 5. Modéliser les variations inter-annuelles
 
-La modélisation des variations inter-annuelles peut être réalisée en considérant la variable temporelle `year` comme une **variable catégorielle**. Ce faisant, une estimation de l'**abondance relative** est faite. Pour rappel, cette estimation est rendue possible par le paramètre `factorVariables` dans la fonction `makeGLM` qui permet de déclarer toutes les variables qui doivent être traitées comme des variables catégorielles. 
+La modélisation des variations inter-annuelles peut être réalisée en considérant la variable temporelle `year` comme une **variable catégorielle**. Pour cela, il suffit d'ajouter la variable *year* au paramètre `factorVariables` de la fonction `makeGLM`. Il est à noter que les coefficients associés à chaque année ne correspondent pas à une abondance absolue de chaque année, mais bien à une abondance relative par rapport à une année de référence. Par défaut, l'année de référence est fixée à la première année, mais la référence peut être changée au travers de l'argument `contr` de la fonction. Ce paramètre accepte plusieurs valeurs : 
+
+- *2001, ..., 2021* : une année spécifique choise comme la référence ;
+
+- *mean* : la moyenne des années comme la référence. L'avantage de choisir cette référence est de s'extraire des problèmes d'échantillonnage potentiellement rencontrés d'une année sur l'autre.
+
 
 ```{r glmCat, echo=TRUE}
-modCat <- makeGLM(data = dataSp, 
-                  interestVar = "count", 
+modCat <- makeGLM(data = dataAll, 
+                  interestVar = "abondance", 
                   fixedEffects = c("year", "longitude", "latitude"),
                   randomEffects = "site",
                   nestedEffects = list(),
                   factorVariables = "year", 
                   distribution = "nbinom2",
+                  contr = "mean",
                   zi = TRUE,
                   scaling = TRUE,
                   intercept = TRUE)
 ```
 
 
-## Formatter les sorties des modèles
+## 6. Formatter les sorties des modèles
+
+Une fois la régression réalisée, nous souhaitons extraire les résultats (estimations, erreurs, p-value, ...) dans un format plus lisible pour l'utilisateur. La fonction `summaryOutput` permet de faire ce reformatage et contient un certain nombre de paramètres :
+
+- le paramètre `rescale` permet de dé-centrer/réduire les coefficients et erreurs standards. Ce paramètre n'a de sens que si les variables explicatives numériques ont été centrées-réduites dans un premier temps lors de la régression ;
+
+- le paramètre `transform` permet de transformer les coefficients lorsque la fonction de lien est différente de l'identité i.e, quand il s'agit d'un log ou logit, notamment dans le cas de distribution non gaussiennes (binomiale, poisson, négative binomiale, ...)
+
+Si on applique la fonction aux tendances globales, on peut retrouver les estimations brutes dans le tableau suivant. Elles sont difficiles à interpréter car les variables ont été initialement centrées-réduites :
+```{r estim1, echo=TRUE}
+summaryOutput(model = modScaled, data = dataAll, 
+              distribution = "nbinom2",
+              fixedEffects = c("year", "longitude", "latitude"),
+              factorVariables = NULL, poly = NULL,
+              transform = FALSE, 
+              rescale = FALSE)
+```
+
+Les estimations dé-centrées/réduites sont regroupées dans le tableau suivant. Elles sont à interpréter comme suit : *quand la variable year augmente de 1, le __log__ de l'abondance augmente de __-0.04628__*.
+```{r estim2, echo=TRUE}
+summaryOutput(model = modScaled, data = dataAll,
+              distribution = "nbinom2",
+              fixedEffects = c("year", "longitude", "latitude"),
+              factorVariables = NULL, poly = NULL,
+              transform = FALSE, 
+              rescale = TRUE)
+
+```
+
+Les estimations dé-centrées/réduites et retransformées sont regroupées dans le tableau suivant. Elles sont à interpréter comme suit : *quand la variable year augmente de 1, l'abondance est multipliée par __0.9547__*.
+```{r estim3, echo=TRUE}
+sum <- summaryOutput(model = modScaled, data = dataAll,
+                     distribution = "nbinom2",
+                     fixedEffects = c("year","longitude","latitude"),
+                     factorVariables = NULL, poly = NULL,
+                     transform = TRUE, 
+                     rescale = TRUE)
+sum
+```
 
 
+Par ailleurs, on peut appliquer la même fonction aux variations inter-annuelles :
 
+```{r estimCat, echo=TRUE}
+sumCat <- summaryOutput(model = modCat,
+                        distribution = "nbinom2",
+                        factorVariables = "year", poly = NULL,
+                        transform = TRUE, 
+                        rescale = TRUE,
+                        data = dataAll,
+                        fixedEffects = c("year","longitude","latitude"),
+                        contr = "mean")
 
+sumCat
+```
 
-
-## Extraire les coefficients
+## 7. Extraire les coefficients
 
 Nous cherchons à savoir plus précisément comment a évolué l'abondance de l'espèce entre la première et la dernière année d'observation. La fonction `analyseCoef` permet de calculer deux indicateurs intéressants : la tendance `trend` et le pourcentage de variation `perc`, dont l'interprétation est explicitée par la suite. Elle permet aussi d'extraire les bornes inférieure `percInf` et supérieure `percSup` de l'intervalle de confiance autour du pourcentage de variation.
 
 ```{r coeff, echo=TRUE}
 coefficients <- analyseCoef(model = modScaled,
                             rescale = TRUE, 
-                            data = dataSp,
-                            distribution = "poisson",
+                            data = dataAll,
+                            distribution = "nbinom2",
                             effectVar = "year")
 
 ```
@@ -239,390 +370,50 @@ L'intervalle de confiance autour de cette estimation est le suivant :
 paste(coefficients$percInf,"/", coefficients$percSup, "%")
 ```
 
-## Représenter les tendances 
+## 8. Contrôle de la qualité du modèle : VIF
 
-Maintenant que nous avons récupéré les coefficients associés à chaque année, nous aimerions les représenter sur un graphique pour visualiser les variations d'abondance au cours du temps. Pour cela, la fonction `plotGLM` permet de représenter sur le même graphique : 
-
-- les coefficients associés à chaque année (point orange) avec leurs intervalles de confiance ;
-
-- la tendance globale et sa significativité (courbe rouge).
-
-```{r plotGLM, echo=TRUE}
-plotGLM(summary = sum, modelCat = modCat, summaryCat = sumCat, effectVar = "year", distribution = "poisson",
-        type = "relative", sp = dataSp$species[1], coefs = coefficients, contr = "mean", path = NULL)
-```
-
-Si le paramètre `path` est renseigné, alors la figure sera sauvegardée dans le répertoire associé.
-
-# III. Données d'abondance
-
-## 1. Chargement des données
-
-```{r data, echo=TRUE}
-data <- importData(path = dataDir)
-```
-
-Les données sont donc maintenant disponibles dans R, sous le nom de : `data`.
-
-## 2. Format du jeu de données
-
-```{r columns, echo=TRUE}
-head(data)
-```
-
-Ce jeu de données contient de nombreuses informations relatives aux observations et conditions d'observation des espèces. Parmi celles nécessaires au bon déroulé de l'analyse :
-
-- le champ `species` est obligatoire, et doit contenir le nom/l'identifiant de l'espèce observée ;
-
-- le champ `year` est obligatoire, et doit contenir l'année d'observation de l'espèce ;
-
-- le champ `transect` (ou `point`) est facultatif, et constitue l'échelle la plus fine d'observation. Elle est accompagnée d'un champ `site` obligatoire, qui est associé à un ou plusieurs `transect` (ou `point`) ;
-
--  le champ `ID` est obligatoire, et correspond à un identifiant unique **date + site (+ point/transect)** ;
-
-- les champs `longitude` et `latitude` sont facultatifs, mais leur présence dans le jeu de données permet de créer une carte de la répartition des sites en France. 
- 
-*NB : aucun nom de colonne n'est imposé pour le champ contenant l'information d'abondance. Ici, il s'agit de la colonne `abondance`.*
-
-## 3. Gestion des absences
-
-
-
-```{r nrowGlob, echo=TRUE}
-# Nombre de données sans absence
-nrow(data)
-
-# Nombre de données avec absence
-nrow(dataAll)
-```
-
-# IV. Régression & tendance générale
-
-Pour l'exemple, on s'intéresse particulièrement à l'espèce **Lysandra coridon**.
-
-```{r nrowSp, echo=TRUE}
-dataSp <- dataAll[dataAll$species == "Lysandra coridon",]
-
-# Nombre de données pour l'espèce
-nrow(dataSp)
-```
-
-## 1. Choisir la variable d'intérêt et les variables explicatives
-
-Une des premières étapes est d'identifier :
-
-- la variable que l'on cherche à modéliser i.e, la variable d'intérêt `interestVar`. Ici nous voulons modéliser l'abondance stockée dans le champ *count* ;
-
-```{r intVar, echo = T}
-summary(dataSp$count)
-```
-
-- le(s) variable(s) que l'on souhaite considérer comme des effets fixes `fixedEffects` ? Ici, nous nous intéressons particulièrement à l'effet de l'année *year* sur l'abondance mais nous souhaitons aussi contrôler pour l'effet de la localisation au travers des champs *longitude* et *latitude* ;
-
-```{r fixEff, include = T}
-# Year
-summary(dataSp$year)
-
-# Longitude
-summary(dataSp$longitude)
-
-# Latitude
-summary(dataSp$latitude)
-
-```
-
-- le(s) variable(s) que l'on souhaite considérer comme des effets aléatoires `randomEffects` ? Ici, le *site* peut avoir une influence forte sur l'abondance perçue. Il s'agit d'une variable catégorielle à beaucoup de niveaux. La considérer comme un effet aléatoire nous permet d'une part de garder de la puissance dans le calcul de tendances, et d'autre part de généraliser les résultats à l'ensemble des sites de France.
-
-```{r randEff, echo=TRUE}
-table(dataSp$site)[1:10]
-```
-
-Par ailleurs, la question peut se poser d'utiliser ou non un *intercept* dans la régression. Il est à noter qu'il est globalement conseillé de laisser cet intercept, si on a pas de bonne raison de l'enlever, au risque d'avoir des comportements inattendus du modèle. Deux raisons notamment peuvent être valables pour le retirer :
-
-(1) s'il y a une raison biologique justifiée à ce que la régression passe par 0 ;
-
-(2) si nous souhaitons accéder à l'abondance moyenne de la catégorie de référence d'une variable explicative catégorielle. 
-
-Une fois identifiées ces différentes variables, la fonction `writeFormula` permet d'écrire la formule de régression adaptée à ce choix de variable, ce qui donne en l'occurrence : 
-
-```{r formula, echo=TRUE}
-writeFormula(interestVar=  "count",
-             fixedEffects = c("year", "longitude", "latitude"),
-             randomEffects = "site",  
-             intercept = TRUE,
-             nestedEffects = list(), # non encore implémenté
-             interactions = list())  # non encore implémenté
-
-```
-
-On pourrait également ajouter :
-
-- des interactions entre variables, quand on pense que l'effet d'une variable peut varier en fonction de la valeur d'une autre variable. C'est l'intérêt de l'argument `interactions`, mais dont les fonctionnalités n'ont pas encore été implémentées ;
-
-- des effets emboîtés, liés à l'échantillonnage. Par exemple, les points ne sont pas les mêmes d'un site à l'autre, ce qui pourrait donner un effet emboîté **point|site**, que nous ne testerons pas ici. C'est l'intérêt de l'argument `nestedEffects`, mais dont les fonctionnalités n'ont pas encore été implémentées.
-
-## 2. Vérifier que les données contiennent toutes les variables
-
-Une fois que les variables à inclure dans la régression sont définies, une étape simple de contrôle consiste à vérifier que toutes ces variables sont bien contenues dans le jeu de données étudié. Cette vérification peut être faite à partir de la fonction `checkData` :
-
-```{r chechData, echo=TRUE}
-checkData(dataSp, type = "transect", 
-          interestVar=  "count",
-          fixedEffects = c("year", "longitude", "latitude"), 
-          randomEffects = "site")
-```
-
-## 3. Choisir la distribution 
-
-Une des étapes importantes de la régression est le choix de la **distribution des résidus**. Un régression linéaire classique repose sur l'hypothèse selon laquelle les résidus de la régression suivent une loi normale, ce qui est plutôt bien adapté à une variable à expliquer continue. 
-
-Cependant, les données d'abondance peuvent être particulières : il existe par exemple des données de *présence/absence* (0/1) ou encore des données de *comptage*, comme c'est le cas dans notre jeu de données. Cela pose la question de la pertinence de la distribution normale pour ce type de variable. 
-
-Les régressions linéaires généralisées **(GLM)** permettent un ensemble d'autres distributions, dont certaines ont été implémentées dans cet outil : 
-
-- la **distribution binomiale**, particulièrement adaptée aux données de présence/absence. *<!> non encore implémenté* ;
-
-- la **distribution de Poisson**, particulièrement adaptée aux données de comptage, mais qui impose néanmoins une contrainte très forte d'égalité entre moyenne et variance, ce qui peut entraîner des problèmes de sur-dispersion ;
-
-- la **distribution négative binomiale**, adaptée aux données de comptage et qui repose sur un paramètre de dispersion supplémentaire permettant de surmonter certains problèmes rencontrés avec la distribution de Poisson.
-
-
-La fonction `detectDistrib` permet de proposer une distribution pertinente à l'utilisateur, si celui-ci ne sait pas laquelle choisir. Pour les données de comptage, la négative binomiale zéro-enflée (intercept seul) est d'office proposée, pour gérer la sur-dispersion courante et la présence d'un grand nombre de 0. 
-
-```{r distrib, echo=TRUE}
-distribParam = detectDistrib(data = dataSp, interestVar = "count", 
-                             distribution = NULL, zi = NULL)
- 
-# Quelle est la distribution choisie ? 
-distribParam$distribution
-  
-# Besoin de faire un modèle zéro-englé ?
-distribParam$zi
-```
-
-## 4. Faire la régression
-
-
-
-Le processus d'estimation des paramètres peut être perturbé par la présence de paramètres numériques avec des plages de valeurs importantes et variables d'un paramètre à l'autre (ex : température entre 0 et 40°C vs. année entre 2000 et 2020). Pour cela, une astuce simple peut être de centrer/réduire les variables numériques. Cela est possible dans la fonction `makeGLM` au travers du paramètre `scaling = TRUE`.
-
-```{r scaledglm, echo=TRUE}
-modScaled <- makeGLM(data = dataSp, 
-                     interestVar = "count", 
-                     fixedEffects = c("year","longitude","latitude"),
-                     randomEffects = "site", 
-                     distribution = "nbinom2",
-                     zi = TRUE,
-                     intercept = TRUE,
-                     scaling = TRUE)
-```
-
-## 5. Formatter les résultats
-
-Une fois la régression réalisée, nous souhaitons extraire les résultats (estimations, erreurs, p-value, ...) dans un format plus lisible pour l'utilisateur. La fonction `summaryOutput` doit permettre ce reformatage et contient un certain nombre de paramètres qui permettent d'affiner plus ou moins la transformation :
-
-- le paramètre `rescale` permet de dé-centrer/réduire les coefficients et erreurs standards. Ce paramètre n'a de sens que si les variables explicatives numériques ont été centrées-réduites dans un premier temps lors de la régression. Avec ce paramètre mis à `TRUE`, doivent être fournis le **jeu de données initial** (paramètre `data`) ainsi que l'ensemble des **effets fixes** sélectionnés (paramètre `fixedEffects`);
-
-- le paramètre `transform` permet de transformer les coefficients lorsque la fonction de lien est différente de l'identité (i.e, quand il s'agit d'un log ou logit). C'est le cas pour toutes les distributions autres que la gaussienne.
-
-Les estimations brutes sont regroupées dans le tableau suivant. Elles sont difficiles à interpréter car les variables ont été initialement centrées-réduites.
-```{r estim1, echo=TRUE}
-summaryOutput(model = modScaled$value, 
-              distribution = "poisson",
-              transform = FALSE, 
-              rescale = FALSE)
-```
-
-Les estimations dé-centrées/réduites sont regroupées dans le tableau suivant. Elles sont à interpréter comme suit : *quand la variable year augmente de 1, le __log__ de l'abondance augmente de __-0.0156__*.
-```{r estim2, echo=TRUE}
-summaryOutput(model = modScaled$value, 
-              distribution = "poisson",
-              transform = FALSE, 
-              rescale = TRUE,
-              data = dataSp,
-              fixedEffects = c("year","longitude","latitude"))
-```
-
-Les estimations dé-centrées/réduites et retransformées sont regroupées dans le tableau suivant. Elles sont à interpréter comme suit : *quand la variable year augmente de 1, l'abondance est multipliée par __0.943__*.
-```{r estim3, echo=TRUE}
-summaryOutput(model = modScaled$value, 
-              distribution = "poisson",
-              transform = TRUE, 
-              rescale = TRUE,
-              data = dataSp,
-              fixedEffects = c("year","longitude","latitude"))
-```
-
-## 6. Extraire la tendance
-
-
-# V. Régression & variations annuelles
-
-## 1. Régression 
-
-Dans la partie précédente, nous avons calculé la tendance globale d'évolution de l'abondance. Nous cherchons maintenant à étudier les variations d'abondance qui peuvent exister d'une année sur l'autre. Pour cela, nous pouvons réaliser une régression où la variable **year** est cette fois considérée comme une **variable catégorielle**. Cela est rendu possible par le paramètre `factorVariables` dans la fonction `makeGLM` qui permet de déclarer toutes les variables qui doivent être traitées comme des variables catégorielles. 
-
-```{r glmCat, echo=TRUE}
-
-modCat <- makeGLM(data = dataSp, 
-                  interestVar = "count", 
-                  fixedEffects = c("year", "longitude", "latitude"),
-                  randomEffects = "site",
-                  factorVariables = "year", 
-                  distribution = "nbinom2",
-                  zi = TRUE,
-                  scaling = T)
-```
-
-Dans ce cadre, les coefficients associés à chaque année permettront de voir les variations d'abondance moyenne par rapport à l'année de référence qu'est la première année. Cela a plusieurs conséquences :
-
-- le coefficient associé à l'année de référence, ici la première année, est estimé à 0, et n'a pas d'erreurs standards associées ;
-
-- la cohérence de l'estimation et des erreurs associées à chaque année dépend grandement du nombre d'observations pour l'année de référence, ce qui peut poser problème dans un contexte où la première année n'est pas forcément une bonne candidate pour l'effort d'observation ;
-
-- les coefficients ne correspondent par à une abondance moyenne pour chaque année, mais bien à un écart d'abondance par rapport à l'année de référence.
-
-```{r summaryCat, echo=TRUE}
-summaryCat <- summaryOutput(model = modCat$value, 
-                            distribution = "nbinom2", 
-                            factorVariables = "year", 
-                            transform = TRUE, 
-                            rescale = TRUE,
-                            data = dataSp, 
-                            fixedEffects = c("year", "longitude", "latitude"))
-
-summaryCat
-```
-
-NB : lorsqu'il n'y a qu'une seule variable catégorielle dans le modèle, comme c'est le cas ici, on peut facilement accéder à l'abondance moyenne de chaque année en retirant l'intercept du modèle.
-
-```{r modCatNoInt, echo = TRUE}
-modCatNoInt <- makeGLM(data = dataSp, 
-                  interestVar = "count", 
-                  fixedEffects = c("year", "longitude", "latitude"),
-                  randomEffects = "site",
-                  factorVariables = "year", 
-                  distribution = "nbinom2",
-                  zi = TRUE,
-                  scaling = TRUE,
-                  intercept = FALSE)
-
-summaryCatNoInt <- summaryOutput(model = modCatNoInt$value, 
-                                 distribution = "nbinom2", 
-                                 factorVariables = "year", 
-                                 transform = TRUE, 
-                                 rescale = TRUE,
-                                 data = dataSp, 
-                                 fixedEffects = c("year", "longitude", "latitude"))
-summaryCatNoInt
-```
-
-## 2. Visualisation
-
-
-
-# VI. Contrôle de la qualité du modèle
-
-Un certain nombre de contrôles doivent être effectués afin de s'assurer de la bonne qualité du modèle et donc des estimations. Ils sont détaillés dans cette section.
-
-## 1. VIF
-
-La multi-colinéarité est un phénomène qui traduit le fait qu'une des variables explicatives est **linéairement liée aux autres variables**. Cela rend les paramètres estimés pour ces variables instables, et peut même cacher un effet significatif de ces variables.  
-
-La fonction `measureVIF` permet de calculer le **VIF (Variance Inflation Factor)**, qui est un indicateur souvent utilisé dans le cadre de la multi-colinéarité. 
+La multi-colinéarité est un phénomène qui traduit le fait qu'une des variables explicatives est **linéairement liée aux autres variables**. Cela rend les paramètres estimés pour ces variables instables, et peut même cacher un effet significatif de ces variables. La fonction `measureVIF` permet de calculer le **VIF (Variance Inflation Factor)**, qui est un indicateur souvent utilisé dans le cadre de la multi-colinéarité. 
 
 ```{r vif, echo = T}
-vif <- measureVIF(model = modScaled$value)
+vif <- measureVIF(model = modScaled)
 
 vif
 ```
 
 Il n'existe pas de consensus autour d'une valeur seuil : 2 est très conservatif, 10 très peu conservatif, 5 est une valeur intermédiaire que nous recommadons ici, mais l'utilisateur est libre de gérer la multi-colinéarité comme il le souhaite.
 
-NB : dans certains cas, une forte colinéarité n'est pas forcément un problème, c'est le cas quand il s'agit :
+*NB* : dans certains cas, une forte colinéarité n'est pas forcément un problème, c'est le cas quand il s'agit :
 
 - de variables contrôles dont l'effet ne nous intéresse pas, et qu'elles ne sont pas colinéaires à une variable d'intérêt, elles peuvent être laissées dans le modèle ;
 
-- de variables catégorielles avec beaucoup de niveaux, dont un avec peu d'observations ;
+- de variables catégorielles avec beaucoup de niveaux, dont un niveau avec peu d'observations ;
 
 - de variables "polynomiales" (ex : longitude et longitude^2).
 
 Si par contre une variable est fortement colinéaire avec une variable explicative d'intérêt, il est **judicieux de la retirer du modèle**.
 
 
-## 2. Dispersion des résidus et zéro-inflation
+## 9. Représenter les tendances 
 
-### a) Quand et pourquoi s'y intéresser ?
+Maintenant que nous avons récupéré la tendance globale, les coefficients associés à chaque année, et que nous avons vérifié la qualité du modèle, nous aimerions les représenter sur un graphique pour visualiser les variations d'abondance au cours du temps. Pour cela, la fonction `plotGLM` permet de représenter sur le même graphique : 
 
-Dans le cadre d'une régression où la dispersion des résidus n'est pas présumée normale (e.g binomiale ou de poisson), un des éléments à regarder est la **dispersion des résidus**. En effet, dans le cadre de ces distributions alternatives, une hypothèse forte est faite sur la variance des résidus :
+- les coefficients associés à chaque année (point orange) avec leurs intervalles de confiance ;
 
-- pour la distribution de Poisson, la variance des résidus doit être égale à la moyenne des résidus : *moyenne(résidus) = Var(résidus)* ;
+- la tendance globale et sa significativité (courbe rouge).
 
-- pour la régression binomiale, la variance est définie par rapport à la probabilité du succès (i.e, dans notre cas la probabilité d'osberver l'espèce) : *Var(résidus) = np(1-p)*.
+```{r plotGLM, echo=TRUE}
+plotGLM(summary = sum, modelCat = modCat, summaryCat = sumCat, effectVar = "year", distribution = "nbinom2",
+        type = "relative", sp = unique(dataAll$species), coefs = coefficients, contr = "mean", path = NULL)
 
-Ainsi une variance très supérieure à sa valeur théorique est qualifiée de **sur-dispersion des résidus**. Cette sur-dispersion est problématique, car elle est associée à une sous-estimation des erreurs standard et à une estimation de p-value trop faibles. En bref, des effets peuvent paraître significatifs alors qu'ils ne le sont pas vraiment !
-
-Dans le cas des données de comptage, cette sur-dispersion peut aller de pair avec un phénomène appelé en anglais *zero-inflation*, qui correspond à une sur-représentation des 0 dans le jeu de données. 
-
-### b) Identifier un problème dans le modèle
-
-Pour se doner une idée empirique de la distribution théorique que devraient suivre les données si elles suivaient parfaitement une loi de Poisson (resp. binomiale), nous avons implémenté la fonction `plotDispersion` :
-
-```{r plotDisp, echo = T}
-plotDispersion(data = dataSp, interestVar = "count", distribution = "nbinom2")
 ```
 
-Qui doit permettre de mettre en évidence le double problème de sur-dispersion et sur-représentation des 0.
+Si le paramètre `path` est renseigné, alors la figure sera sauvegardée dans le répertoire associé.
 
-NB : la fonction `testDispersion` permet de se faire une idée d'un éventuel problème de dispersion dans le modèle, mais elle ne fonctionne que dans le cas où il n'y a pas de partie zero-enflée dans le modèle
+## 10. Fonction annexe : gérer les erreurs
 
-```{r disp, echo = T, eval = !(distribParam$zi) }
-disp <- testDispersion(model = modScaled$value)
-disp
-```
+Lors d'analyses en routine sur un grand nombre d'espèces, des erreurs peuvent se produire en cours de route et arrêter les analyses. Pour maintenir les analyses, tout en gardant une trace des erreurs / alertes, la fonction `catchConditions` permet d'encapsuler des fonctions potentiellement instables et d'extraire les alertes ou erreurs rencontrées. C'est le cas dans `makeGLM`, dans laquelle la fonction `glmmTMB` y est encapsulée.
 
-Les sorties de la fonctionne comprennent une colonne `ratio` qui permet de caractériser la dispersion des résidus :
-
-- si ratio > 1, alors les résidus sont sur-dispersés ;
-
-- si ratio < 1, alors  les résidus sont sous-dispersés.
-
-En plus de cela, la colonne `p` permet de vérifier si cette différence par rapport à 1 est significative ou non.
-
-```{r ratio, echo = T, eval = !(distribParam$zi)}
-# Ratio de dispersion
-disp$Ratio
-
-# Probabilité qu'il y ait sous/sur-dispersion 
-disp$`P Values`
-```
-
-### c) Quelles causes et solutions ?
-
-La sur-dispersion des résidus peut être liée à différents phénomènes notamment :
-
-- l'oubli de certaines variables explicatives dans le modèle ;
-
-- la présence de valeurs extrêmes ;
-
-- la présence d'un grand nombre de 0 dans le jeu de données, aussi appelée **zero-inflation** (cf. VI.3).
-
-Parmi les solutions qui existent pour résoudre (au moins partiellement ce problème), on trouve :
-
-- le changement de distribution (troquer *poisson contre négative binomiale* ou *binomial contre quasi-binomial*), qui permet de rajouter de la flexibilité dans l'écart entre moyenne et variance. Il s'agit d'une des solutions les plus simples pour améliorer la qualité du modèle dans un cas de sur-dispersion des résidus ;
-
-- la prise en compte des 0 dans le modèle, au travers l'utilisation d'un modèle dit *zero-inflated*, qui combine (1) une régression binomiale, pour gérer les absences vs. les présences et (2) une régression de Poisson ou négative-binomiale, pour gérer les variations d'abondance.
-
-**<!> Le choix par défaut pour les données de comptage, est de réaliser une régression avec une distribution négative-binomiale et une partie zéro-enflée.**
-
-## 3. Auto-corrélation spatiale
-[ A VENIR ]
-
-# VII. Fonction annexe : gérer les erreurs
-
-Lors d'analyses en routine sur un grand nombre d'espèces, des erreurs peuvent se produire en cours de route et arrêter les analyses. Pour maintenir les analyses, tout en gardant une traçe des erreurs / alertes, la fonction `catchConditions` permet d'encapsuler des fonctions potentiellement instables et d'extraire les alertes ou erreurs rencontrées. C'est le cas dans `makeGLM`, dans laquelle la fonction `glmmTMB` y est encapsulée.
-
-Construisons d'abord une fonction simple, qui peut présenter des alertes ou des warnings : 
+Construisons d'abord une fonction simple, qui peut présenter des alertes ou des erreurs : 
 
 ```{r fun, echo = TRUE}
 # Fonction permettant de calculer la somme de x et y
@@ -665,3 +456,77 @@ Le dernier exemple montre le résultat de l'encapsulation lorsqu'une erreur se p
 ```{r catchCond_PBM, include = TRUE}
 catchConditions(expr = fun(x = 5, y = "2"))
 ```
+
+# III. Routine d'analyses
+
+## 1. Paramètres utilisateurs
+
+Un certain nombre de paramètres doivent être choisis par l'utilisateur pour le bon fonctionnement de la routine. Ils sont à renseigner au début du script `main.R` et concernent notamment : 
+
+- le chemin `rootDir` vers le dossier contenant le script `main.R` ;
+
+- les différentes variables explicatives et à expliquer à inclure dans l'analyse ;
+
+- un niveau de référence `contr` pour les variations annuelles.
+
+## Paramètres automatiques 
+
+Dans la routine, certains paramètres sont automatiquement choisis pour éviter de sur-solliciter l'utilisateur. C'est le cas notamment :
+
+- de la liste d'espèces d'intérêt `speciesList`, qui est fixée automatiquement à l'ensemble des valeurs prises dans la colonne `species` ;
+
+- de la profondeur de données utilisée `yearRange`, qui est fixée automatiquement à l'ensemble des valeurs prises dans la colonne `year` ;
+
+- de l'obligation de centrer/réduire les variables numériques `scaling`, automatiquement fixé à `TRUE` ;
+
+- de la distribution choisie dans le modèle, qui est fixée automatiquement en fonction des valeurs prises dans la colonne d'**abondance** via la fonction `detectDistrib` décrite en **II. 4.**.
+
+A noter : l'ensemble de ces paramètres est en fait modifiables dans le fichier *parameters.R*, accessible dans le sous-dossier **scripts/basic/**.
+
+## Que fait la routine ?
+
+A l'issue de la routine, un certain nombre de documents sont rendus disponibles. D'abord, pour chaque espèce :
+
+- un graphique dans le dossier **resultats/YEAR**, représentant le nombre de sites visités par an, avec l'information de présence ou d'absence sur chaque site ;
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+knitr::include_graphics(paste0(rootDir, "results/YEAR/APUAPU.png"))
+```
+
+- si les coordonnées sont disponibles, une carte de France dans le dossier **resultats/MAP**, où sont représentés les sites où l'espèce a été vue ;
+
+```{r echo = FALSE, warning = FALSE, message = FALSE}
+knitr::include_graphics(paste0(rootDir, "results/MAP/APUAPU.png"))
+```
+
+- si les modèles ont convergé, un graphique dans le dossier **resultats/TREND**, représentant les variations annuelles d'abondance et la tendance globale ;
+
+```{r echo = FALSE, warning=FALSE, message = FALSE}
+knitr::include_graphics(paste0(rootDir, "results/TREND/APUAPU.png"))
+```
+
+En parallèle, les résultats des modèles sont sauvegardés dans les fichiers :
+
+- `globalTrends.csv`, qui contient les résultats de tendance globale pour l'ensemble des espèces :
+
+| species       | nbObs | nbYear | totAbundance | vif | intercept | interceptSE | interceptInf | interceptSup | interceptPval | estimate | estimateSE | estimateInf | estimateSup | estimatePval | trend | trendInf | trendSup | significance | category             | 
+|---------------|-------|--------|--------------|-----|-----------|-------------|--------------|--------------|---------------|----------|------------|-------------|-------------|--------------|-------|----------|----------|--------------|--------------------| 
+| Pigeon ramier | 17062 | 19     | 178921       | NA  | 1.81e-05  | 0.73734     | 3.2981e-05   | 9.9887e-06   | 0             | 1.0357   | 1.0009     | 1.0339      | 1.0375       | 0            | 94.75 | 88.55    | 101.15   | Oui          | Augmentation modérée | 
+| Pinson des arbres | 17062 | 19     | 233544       | NA  | 9.4173  | 0.8187     | 13.938   | 6.3628   | 0             | 1.0004   | 1.0006     | 0.99926      | 1.0015       | 0.49979            | 0.75 | -1.4    | 2.94   | Non          | Stable | 
+
+- `yearlyVariations.csv`, qui contient les résultats des variations annuelles pour l'ensemble des espèces :
+
+| species       | nbObs | nbYear | totAbundance | contrast | year       | estimate | estimateSE | estimateInf | estimateSup | pval         | significance |
+|---------------|-------|--------|--------------|----------|------------|----------|------------|-------------|-------------|--------------|--------------| 
+| Pigeon ramier | 17062 | 19     | 178921       | mean     | intercept  | 7.6867   | 1.0162     | 7.449       | 7.9319      | 0            | Oui          |
+| Pigeon ramier | 17062 | 19     | 178921       | mean     | 2003       | 0.7136   | 1.0189     | 0.68791     | 0.74025     | 9.4767e-73   | Oui          |
+| Pigeon ramier | 17062 | 19     | 178921       | mean     | 2004       | 0.77285  | 1.0167     | 0.74811     | 0.79841     | 2.4289e-54   | Oui          |
+
+
+## IV. Fonctionnalités à venir
+
+- choix d'une distribution binomiale ;
+
+- possibilité d'interactions entre variables ; 
+
+- correction pour l'auto-corrélation spatiale.

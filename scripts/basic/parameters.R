@@ -16,11 +16,11 @@ yearRange <- NULL
 # Quelle hypothèse de distribution faire : gaussian, poisson, nbinom2, binomial ?
 distribution <- NULL
 
-# Doit-on centrer/réduire les variables numériques ?
-scaling <- TRUE
-
 # Dans le cas d'une distribution de poisson ou négative binomiale, doit-on faire un modèle zéro-enflé?
 zi <- NULL # TRUE/FALSE
+
+# Doit-on centrer/réduire les variables numériques ?
+scaling <- TRUE
 
 # Dans le cas d'une distribution binomiale, quel nombre d'essais (10 placettes = 10 essais) ?
 nTry <- 10

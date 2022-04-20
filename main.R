@@ -5,7 +5,7 @@ rm(list = ls())
 ######################################
 
 # Chemin d'accès au package
-dir = "C:/Users/mvimont01/Documents/MNHN/Tendances/Code/tendency/"
+rootDir = "C:/Users/mvimont01/Documents/MNHN/Tendances/Code/tendency/"
 
 # Quelle est la variable d'abondance à étudier ?
 interestVar <- "abondance"
@@ -37,19 +37,14 @@ contrEffect <- "mean" # ou 2001 ou 2010 ou NULL
 ###########
 
 # Création des répertoires généraux
-resDir = paste0(dir, "results/")
-scrDir = paste0(dir, "scripts/")
-dataDir = paste0(dir, "data/")
+resDir = paste0(rootDir, "results/")
+scrDir = paste0(rootDir, "scripts/")
+dataDir = paste0(rootDir, "data/")
 
 # Création des répertoires de résultats
-## Premier niveau
-dir.create(path = paste0(resDir, "SPECIES/"), showWarnings = F)
-dir.create(path = paste0(resDir, "GLOBAL/"), showWarnings = F)
-
-## Deuxième niveau
-dir.create(path = paste0(resDir, "GLOBAL/YEAR/"), showWarnings = F)
-dir.create(path = paste0(resDir, "GLOBAL/MAP/"), showWarnings = F)
-dir.create(path = paste0(resDir, "GLOBAL/TREND/"), showWarnings = F)
+dir.create(path = paste0(resDir, "YEAR/"), showWarnings = F)
+dir.create(path = paste0(resDir, "MAP/"), showWarnings = F)
+dir.create(path = paste0(resDir, "TREND/"), showWarnings = F)
 
 # Importation des fonctions
 sapply(X = list.files(paste0(scrDir,"functions/"), pattern = "*.R"), 
@@ -100,11 +95,8 @@ if(check){
   
   listAll <- list()
   for (sp in speciesList){
-
-    cat("Species ", sp, " is going under analysis\n")
     
-    # Création du répertoire dédié à l'espèce sp
-    dir.create(path = paste0(resDir, "SPECIES/", sp), showWarnings = F)
+    cat("Species ", sp, " is going under analysis\n")
     
     # Extraire les indices correspondant à l'espèce sp
     indSp <- which(data[,"species"] == sp)
@@ -116,5 +108,5 @@ if(check){
     source(paste0(scrDir, "rmd/routine.R"))
     
   }
-  reportConvergence(data = data, path = paste0(resDir, "GLOBAL/"))
+  reportConvergence(data = data, path = resDir)
 }

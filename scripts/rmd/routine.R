@@ -5,13 +5,13 @@
 
 # Distribution temporelle des observations
 
-plotYear <- tempDistrPlot(dataSp, interestVar, sp, path = paste0(resDir, "GLOBAL/YEAR/"))
+plotYear <- tempDistrPlot(dataSp, interestVar, sp, path = paste0(resDir, "YEAR/"))
 
 # Distribution spatiale des observations
 if(isTRUE(coord)){
   plotMap <- makeMap(data = dataSp, type = "site", shape = "square",
                      interestVar = interestVar, sp = sp, 
-                     path = paste0(resDir, "GLOBAL/MAP/"))
+                     path = paste0(resDir, "MAP/"))
 }
 
 ####################
@@ -99,16 +99,16 @@ plotTrend <- plotGLM(summary = annualSum, modelCat = interAnnualModel,
                      summaryCat = interAnnualSum, effectVar = effectVar, 
                      distribution = automaticDistrib$distribution, 
                      sp = sp, type = "relative", coefs = coefs, contr = contrEffect,
-                     path = paste0(resDir, "GLOBAL/TREND/"))
+                     path = paste0(resDir, "TREND/"))
 
 # Sauvegarde de la tendance globale
 saveGlobalTrends(sp = sp, data = dataSp, interestVar = interestVar, effectVar = effectVar, 
                  distribution = automaticDistrib$distribution, model = annualModel, summary = annualSum, 
-                 coefs = coefs, vif = vif, path = paste0(resDir, "GLOBAL/"))
+                 coefs = coefs, vif = vif, path = resDir)
 
 # Save yearly variations  
 saveYearlyVariations(sp = sp, data = dataSp, interestVar = interestVar, effectVar = effectVar, 
                      model = interAnnualModel, summary = interAnnualSum,  contr = contrEffect, 
-                     path = paste0(resDir, "GLOBAL/"))
+                     path = resDir)
 
 cat(" --> DONE\n")
